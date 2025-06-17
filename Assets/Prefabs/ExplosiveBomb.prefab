@@ -101,7 +101,7 @@ MonoBehaviour:
   powerUpType: 2
   effectDuration: 5
   effectStrength: 2
-  collectSound: {fileID: 0}
+  collectSound: {fileID: 8300000, guid: 68b5c63205f7e134d9983018c6b64927, type: 3}
   collectEffect: {fileID: 0}
   rotateSpeed: 90
 --- !u!61 &-1085555341319250404

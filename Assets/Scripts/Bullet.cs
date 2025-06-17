@@ -130,32 +130,21 @@ public class Bullet : MonoBehaviour
 
     void CreateExplosion()
     {
-        // Spawn explosion visual effect
         if (explosionEffectPrefab != null)
         {
             GameObject explosion = Instantiate(explosionEffectPrefab, transform.position, Quaternion.identity);
-            explosion.transform.localScale = Vector3.one * (explosionRadius / 2f);
-            Destroy(explosion, 3f);
+            explosion.transform.localScale = Vector3.one * (explosionRadius * 2f); // Visual size
+
+            ExplosionArea area = explosion.GetComponent<ExplosionArea>();
+            if (area != null)
+            {
+                area.ownerPlayerNumber = ownerPlayer;
+            }
         }
 
-        // Play explosion sound
         if (explosionSound != null)
         {
             AudioSource.PlayClipAtPoint(explosionSound, transform.position);
-        }
-
-        // Find all colliders within explosion radius
-        Collider2D[] hitColliders = Physics2D.OverlapCircleAll(transform.position, explosionRadius);
-
-        foreach (Collider2D hitCollider in hitColliders)
-        {
-            TankController tank = hitCollider.GetComponent<TankController>();
-            if (tank != null && tank.playerNumber != ownerPlayer)
-            {
-                // Fire event for each tank hit by explosion
-                OnTankHit?.Invoke(tank);
-                tank.TakeDamage();
-            }
         }
     }
 

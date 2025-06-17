@@ -100,8 +100,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   controlForce: 200
-  explosionEffectPrefab: {fileID: 0}
-  explosionSound: {fileID: 0}
+  explosionEffectPrefab: {fileID: 7815405654766256259, guid: 377bc2de4ad881e42a9f7015dc402227, type: 3}
+  explosionSound: {fileID: 8300000, guid: 0e835f0f40302864c87a056a3ba6b29a, type: 3}
 --- !u!50 &-5838613890687142107
 Rigidbody2D:
   serializedVersion: 4
