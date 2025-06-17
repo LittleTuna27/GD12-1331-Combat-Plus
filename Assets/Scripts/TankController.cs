@@ -40,7 +40,18 @@ public class TankController : MonoBehaviour
     public int score = 0;
     public Text scoreText;
 
-    [SerializeField] private UIManager UIManager;
+    [Header("Audio")]
+    public AudioClip moveClip;
+    public AudioClip shootClip;
+    private AudioSource audioSource;
+    private bool isMoveAudioPlaying = false;
+
+    [Header("UI")]
+    public UnityEngine.UI.Image powerupIcon;
+    public Sprite bombIcon;
+    public Sprite shieldIcon;
+    public Sprite spreadShotIcon;
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -64,6 +75,8 @@ public class TankController : MonoBehaviour
         }
 
         UpdateScoreUI();
+
+        audioSource = GetComponent<AudioSource>();
     }
 
     void Update()
@@ -142,6 +155,24 @@ public class TankController : MonoBehaviour
             rb.angularVelocity = 0f;
         }
 
+        // Start movement sound if pressing a movement key
+        if ((Input.GetKeyDown(forwardKey) || Input.GetKeyDown(backwardKey) ||
+             Input.GetKeyDown(leftKey) || Input.GetKeyDown(rightKey)) && moveClip != null && !audioSource.isPlaying)
+        {
+            audioSource.clip = moveClip;
+            audioSource.loop = true;
+            audioSource.Play();
+            isMoveAudioPlaying = true;
+        }
+
+        // Stop movement sound if all movement keys are released
+        if (isMoveAudioPlaying && !Input.GetKey(forwardKey) && !Input.GetKey(backwardKey) &&
+            !Input.GetKey(leftKey) && !Input.GetKey(rightKey))
+        {
+            audioSource.Stop();
+            isMoveAudioPlaying = false;
+        }
+
         // Shooting (only if no active bullet)
         if (Input.GetKeyDown(fireKey) && Time.time >= nextFireTime && activeBullet == null)
         {
@@ -152,6 +183,10 @@ public class TankController : MonoBehaviour
 
     void Fire()
     {
+        if (shootClip != null)
+        {
+            audioSource.PlayOneShot(shootClip);
+        }
         if (bulletPrefab != null && firePoint != null && activeBullet == null)
         {
             PowerUpEffect powerUp = GetComponent<PowerUpEffect>();
@@ -300,6 +335,12 @@ public class TankController : MonoBehaviour
     {
         nextBulletIsExplosive = true;
         explosionRadius = radius;
+
+        if (powerupIcon != null && bombIcon != null)
+        {
+            powerupIcon.sprite = bombIcon;
+            powerupIcon.enabled = true;
+        }
     }
 
     // Called by bullet when it's destroyed
