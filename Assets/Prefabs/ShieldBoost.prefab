@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 5453033270547787715}
   - component: {fileID: 2175596211078473469}
   - component: {fileID: 3123590323305566657}
-  - component: {fileID: -4078945370401679932}
+  - component: {fileID: 633636104430228365}
   m_Layer: 0
   m_Name: ShieldBoost
   m_TagString: Untagged
@@ -29,7 +29,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.25, y: 0.25, z: 0.25}
+  m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -75,8 +75,8 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: c64ea735fdbf2a840827740b04f2a690, type: 3}
-  m_Color: {r: 0, g: 0.73833895, b: 1, a: 1}
+  m_Sprite: {fileID: 21300000, guid: 876b112efcc1e98478e93a0c7f4a7669, type: 3}
+  m_Color: {r: 0.4764151, g: 0.8480578, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -98,21 +98,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 59f68b8c577b31b4d93f15b48ee1cc9f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  powerUpType: 2
+  powerUpType: 1
   effectDuration: 5
   effectStrength: 2
   collectSound: {fileID: 0}
   collectEffect: {fileID: 0}
-  bobSpeed: 2
-  bobHeight: 0.5
   rotateSpeed: 90
---- !u!65 &-4078945370401679932
-BoxCollider:
+--- !u!61 &633636104430228365
+BoxCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4270333888252670946}
+  m_Enabled: 1
+  m_Density: 1
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -121,9 +121,31 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
   m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 0.2}
-  m_Center: {x: 0, y: 0.21133333, z: 0}
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0.21133333}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 0.16, y: 0.16}
+    newSize: {x: 1, y: 1}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  serializedVersion: 2
+  m_Size: {x: 1, y: 1}
+  m_EdgeRadius: 0

@@ -5,24 +5,23 @@ using UnityEngine;
 public class PowerUpSpawner : MonoBehaviour
 {
     [Header("Spawn Settings")]
-    public GameObject[] powerUpPrefabs; // Array of different power-up prefabs
-    public int maxPowerUps = 3; // Maximum power-ups on field at once
-    public float spawnInterval = 10f; // Time between spawn attempts
-    public float powerUpLifetime = 15f; // How long power-ups stay on field
+    public GameObject[] powerUpPrefabs;
+    public int maxPowerUps = 3;
+    public float spawnInterval = 10f;
+    public float powerUpLifetime = 15f;
 
     [Header("Spawn Area")]
-    public Transform[] spawnPoints; // Predefined spawn points
+    public Transform[] spawnPoints;
     public bool useRandomSpawning = true;
     public Vector2 spawnAreaMin = new Vector2(-8f, -4f);
     public Vector2 spawnAreaMax = new Vector2(8f, 4f);
-    public LayerMask obstacleLayer = 1; // What layers to avoid when spawning
-    public float spawnCheckRadius = 1f; // Radius to check for clear spawning
+    public LayerMask obstacleLayer = 1;
+    public float spawnCheckRadius = 1f;
 
     [Header("Spawn Chances")]
-    [Range(0f, 1f)] public float speedBoostChance = 0.3f;
-    [Range(0f, 1f)] public float rapidFireChance = 0.3f;
-    [Range(0f, 1f)] public float shieldChance = 0.2f;
-    [Range(0f, 1f)] public float bombChance = 0.2f;
+    [Range(0f, 1f)] public float spreadShotChance = 0.4f;
+    [Range(0f, 1f)] public float shieldChance = 0.3f;
+    [Range(0f, 1f)] public float bombChance = 0.3f;
 
     private List<GameObject> activePowerUps = new List<GameObject>();
     private float nextSpawnTime;
@@ -30,17 +29,13 @@ public class PowerUpSpawner : MonoBehaviour
     void Start()
     {
         nextSpawnTime = Time.time + spawnInterval;
-
-        // Validate spawn chances
         ValidateSpawnChances();
     }
 
     void Update()
     {
-        // Clean up destroyed power-ups from our list
         CleanupDestroyedPowerUps();
 
-        // Check if we should spawn a new power-up
         if (Time.time >= nextSpawnTime && activePowerUps.Count < maxPowerUps)
         {
             SpawnPowerUp();
@@ -52,10 +47,8 @@ public class PowerUpSpawner : MonoBehaviour
     {
         Vector3 spawnPosition;
 
-        // Try to find a valid spawn position
         if (FindValidSpawnPosition(out spawnPosition))
         {
-            // Choose which power-up to spawn
             GameObject powerUpPrefab = ChoosePowerUpPrefab();
 
             if (powerUpPrefab != null)
@@ -63,7 +56,6 @@ public class PowerUpSpawner : MonoBehaviour
                 GameObject newPowerUp = Instantiate(powerUpPrefab, spawnPosition, Quaternion.identity);
                 activePowerUps.Add(newPowerUp);
 
-                // Destroy after lifetime
                 StartCoroutine(DestroyPowerUpAfterTime(newPowerUp, powerUpLifetime));
 
                 Debug.Log($"Spawned {newPowerUp.name} at {spawnPosition}");
@@ -71,6 +63,7 @@ public class PowerUpSpawner : MonoBehaviour
         }
         else
         {
+            SpawnPowerUp();
             Debug.LogWarning("Could not find valid spawn position for power-up");
         }
     }
@@ -86,7 +79,6 @@ public class PowerUpSpawner : MonoBehaviour
 
             if (useRandomSpawning)
             {
-                // Random position within spawn area
                 attemptPosition = new Vector3(
                     Random.Range(spawnAreaMin.x, spawnAreaMax.x),
                     Random.Range(spawnAreaMin.y, spawnAreaMax.y),
@@ -95,13 +87,11 @@ public class PowerUpSpawner : MonoBehaviour
             }
             else if (spawnPoints != null && spawnPoints.Length > 0)
             {
-                // Use predefined spawn points
                 Transform randomPoint = spawnPoints[Random.Range(0, spawnPoints.Length)];
                 attemptPosition = randomPoint.position;
             }
             else
             {
-                // Fallback to random if no spawn points defined
                 attemptPosition = new Vector3(
                     Random.Range(spawnAreaMin.x, spawnAreaMax.x),
                     Random.Range(spawnAreaMin.y, spawnAreaMax.y),
@@ -109,7 +99,6 @@ public class PowerUpSpawner : MonoBehaviour
                 );
             }
 
-            // Check if position is clear
             if (IsPositionClear(attemptPosition))
             {
                 position = attemptPosition;
@@ -122,7 +111,6 @@ public class PowerUpSpawner : MonoBehaviour
 
     bool IsPositionClear(Vector3 position)
     {
-        // Check for obstacles using Physics2D
         Collider2D hit = Physics2D.OverlapCircle(position, spawnCheckRadius, obstacleLayer);
         return hit == null;
     }
@@ -132,23 +120,16 @@ public class PowerUpSpawner : MonoBehaviour
         if (powerUpPrefabs == null || powerUpPrefabs.Length == 0)
             return null;
 
-        // If we only have one prefab, return it
         if (powerUpPrefabs.Length == 1)
             return powerUpPrefabs[0];
 
-        // Choose based on chances
         float randomValue = Random.Range(0f, 1f);
         float cumulativeChance = 0f;
 
-        // Speed Boost
-        cumulativeChance += speedBoostChance;
-        if (randomValue <= cumulativeChance && HasPowerUpOfType(PowerUpType.SpeedBoost))
-            return GetPowerUpPrefabOfType(PowerUpType.SpeedBoost);
-
-        // Rapid Fire
-        cumulativeChance += rapidFireChance;
-        if (randomValue <= cumulativeChance && HasPowerUpOfType(PowerUpType.RapidFire))
-            return GetPowerUpPrefabOfType(PowerUpType.RapidFire);
+        // Spread Shot
+        cumulativeChance += spreadShotChance;
+        if (randomValue <= cumulativeChance && HasPowerUpOfType(PowerUpType.SpreadShot))
+            return GetPowerUpPrefabOfType(PowerUpType.SpreadShot);
 
         // Shield
         cumulativeChance += shieldChance;
@@ -187,7 +168,7 @@ public class PowerUpSpawner : MonoBehaviour
 
     void ValidateSpawnChances()
     {
-        float total = speedBoostChance + rapidFireChance + shieldChance + bombChance;
+        float total = spreadShotChance + shieldChance + bombChance;
         if (total > 1f)
         {
             Debug.LogWarning($"Power-up spawn chances total {total:F2}, which is greater than 1.0. Consider adjusting values.");
@@ -211,15 +192,11 @@ public class PowerUpSpawner : MonoBehaviour
 
         if (powerUp != null)
         {
-            // Remove from active list
             activePowerUps.Remove(powerUp);
-
-            // Add fade out effect here if desired
             Destroy(powerUp);
         }
     }
 
-    // Visualize spawn area in scene view
     void OnDrawGizmosSelected()
     {
         // Draw spawn area

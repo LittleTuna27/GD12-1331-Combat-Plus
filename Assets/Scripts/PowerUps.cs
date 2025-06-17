@@ -2,8 +2,7 @@ using UnityEngine;
 
 public enum PowerUpType
 {
-    SpeedBoost,
-    RapidFire,
+    SpreadShot,     // Replaces SpeedBoost and RapidFire
     ShieldBoost,
     ExplosiveBomb
 }
@@ -18,16 +17,12 @@ public class PowerUp : MonoBehaviour
 
     [Header("Visual Effects")]
     public GameObject collectEffect;
-    public float bobSpeed = 2f;
-    public float bobHeight = 0.5f;
     public float rotateSpeed = 90f;
 
-    private Vector3 startPos;
     private AudioSource audioSource;
 
     void Start()
     {
-        startPos = transform.position;
         audioSource = GetComponent<AudioSource>();
 
         // If no audio source exists, create one
@@ -41,11 +36,7 @@ public class PowerUp : MonoBehaviour
 
     void Update()
     {
-        // Bob up and down
-        float newY = startPos.y + Mathf.Sin(Time.time * bobSpeed) * bobHeight;
-        transform.position = new Vector3(startPos.x, newY, startPos.z);
-
-        // Rotate
+        // Rotate only (bobbing removed)
         transform.Rotate(0, 0, rotateSpeed * Time.deltaTime);
     }
 
@@ -81,11 +72,9 @@ public class PowerUp : MonoBehaviour
 
         switch (powerUpType)
         {
-            case PowerUpType.SpeedBoost:
-                effect.ApplySpeedBoost(effectDuration, effectStrength);
-                break;
-            case PowerUpType.RapidFire:
-                effect.ApplyRapidFire(effectDuration, effectStrength);
+            case PowerUpType.SpreadShot:
+                // effectStrength determines number of bullets (3 = 3 bullets, 5 = 5 bullets, etc.)
+                effect.ApplySpreadShot((int)effectStrength);
                 break;
             case PowerUpType.ShieldBoost:
                 effect.ApplyShield(effectDuration);
@@ -101,99 +90,80 @@ public class PowerUp : MonoBehaviour
 public class PowerUpEffect : MonoBehaviour
 {
     private TankController tankController;
-    private float originalMoveSpeed;
-    private float originalFireRate;
 
     // Effect tracking
-    private bool hasSpeedBoost = false;
-    private bool hasRapidFire = false;
     private bool hasShield = false;
     private bool hasExplosiveBomb = false;
+    private bool hasSpreadShot = false;
+    private int spreadShotBullets = 3; // Number of bullets in spread
+
+    void Awake()
+    {
+        // Initialize tankController in Awake instead of Start
+        // This ensures it's available immediately when the component is added
+        tankController = GetComponent<TankController>();
+    }
 
     void Start()
     {
-        tankController = GetComponent<TankController>();
-        if (tankController != null)
+        // Keep this as backup in case Awake didn't run
+        if (tankController == null)
         {
-            originalMoveSpeed = tankController.moveSpeed;
-            originalFireRate = tankController.fireRate;
+            tankController = GetComponent<TankController>();
         }
     }
 
-    public void ApplySpeedBoost(float duration, float multiplier)
+    public void ApplySpreadShot(int bulletCount)
     {
-        if (tankController == null) return;
+        hasSpreadShot = true;
+        spreadShotBullets = Mathf.Clamp(bulletCount, 3, 7); // Limit between 3-7 bullets
 
-        if (!hasSpeedBoost)
-        {
-            tankController.moveSpeed *= multiplier;
-            hasSpeedBoost = true;
-            Invoke(nameof(RemoveSpeedBoost), duration);
+        // Ensure tankController is available
+        if (tankController == null)
+            tankController = GetComponent<TankController>();
 
-            Debug.Log($"Player {tankController.playerNumber} got Speed Boost!");
-        }
-    }
-
-    public void ApplyRapidFire(float duration, float multiplier)
-    {
-        if (tankController == null) return;
-
-        if (!hasRapidFire)
-        {
-            tankController.fireRate /= multiplier; // Lower fire rate = faster shooting
-            hasRapidFire = true;
-            Invoke(nameof(RemoveRapidFire), duration);
-
-            Debug.Log($"Player {tankController.playerNumber} got Rapid Fire!");
-        }
+        Debug.Log($"Player {tankController?.playerNumber ?? 0} got Spread Shot! Next shot will fire {spreadShotBullets} bullets!");
     }
 
     public void ApplyShield(float duration)
     {
+        // Ensure tankController is available
+        if (tankController == null)
+            tankController = GetComponent<TankController>();
+
         if (!hasShield)
         {
             hasShield = true;
             Invoke(nameof(RemoveShield), duration);
 
             // Visual indicator for shield (you can add a shield sprite here)
-            Debug.Log($"Player {tankController.playerNumber} got Shield!");
+            Debug.Log($"Player {tankController?.playerNumber ?? 0} got Shield!");
         }
     }
 
     public void ApplyExplosiveBomb(float explosionRadius)
     {
+        // Ensure tankController is available
+        if (tankController == null)
+            tankController = GetComponent<TankController>();
+
         hasExplosiveBomb = true;
-        Debug.Log($"Player {tankController.playerNumber} got Explosive Bomb! Next shot will explode!");
+        Debug.Log($"Player {tankController?.playerNumber ?? 0} got Explosive Bomb! Next shot will explode!");
 
         // Store explosion radius for when bullet hits
         GetComponent<TankController>().SetExplosiveBullet(explosionRadius);
     }
 
     // Remove effect methods
-    void RemoveSpeedBoost()
-    {
-        if (tankController != null)
-        {
-            tankController.moveSpeed = originalMoveSpeed;
-        }
-        hasSpeedBoost = false;
-        Debug.Log($"Player {tankController.playerNumber} Speed Boost ended");
-    }
-
-    void RemoveRapidFire()
-    {
-        if (tankController != null)
-        {
-            tankController.fireRate = originalFireRate;
-        }
-        hasRapidFire = false;
-        Debug.Log($"Player {tankController.playerNumber} Rapid Fire ended");
-    }
-
     void RemoveShield()
     {
         hasShield = false;
-        Debug.Log($"Player {tankController.playerNumber} Shield ended");
+
+        // Ensure tankController is available
+        if (tankController == null)
+            tankController = GetComponent<TankController>();
+
+        Debug.Log($"Player {tankController?.playerNumber ?? 0} Shield ended");
     }
 
     // Method to check if tank should take damage (called from TakeDamage)
@@ -213,5 +183,24 @@ public class PowerUpEffect : MonoBehaviour
     public void OnExplosiveBulletFired()
     {
         hasExplosiveBomb = false;
+    }
+
+    // Check if next shot should be spread shot
+    public bool ShouldFireSpreadShot()
+    {
+        return hasSpreadShot;
+    }
+
+    // Get number of bullets for spread shot
+    public int GetSpreadShotBullets()
+    {
+        return spreadShotBullets;
+    }
+
+    // Called when spread shot is fired
+    public void OnSpreadShotFired()
+    {
+        hasSpreadShot = false;
+        spreadShotBullets = 3; // Reset to default
     }
 }

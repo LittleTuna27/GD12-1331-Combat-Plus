@@ -11,9 +11,6 @@ public class Bullet : MonoBehaviour
     [Header("Bullet Control")]
     public float controlForce = 200f;
 
-    [Header("Debug")]
-    public bool enableDebugLogs = true;
-
     [Header("Explosion")]
     public GameObject explosionEffectPrefab;
     public AudioClip explosionSound;
@@ -29,18 +26,16 @@ public class Bullet : MonoBehaviour
         // Ensure rigidbody settings are correct
         if (rb != null)
         {
-            rb.gravityScale = 0f; // No gravity for top-down
-            rb.drag = 0f; // No drag unless you want it
+            rb.gravityScale = 0f;
+            rb.drag = 0f;
             rb.angularDrag = 0f;
         }
 
         // Destroy bullet after lifetime
         Destroy(gameObject, lifetime);
-
-        if (enableDebugLogs)
-            Debug.Log($"Bullet created by player {ownerPlayer}");
     }
 
+    // Normal bullet initialization (player controllable)
     public void Initialize(TankController tank, int playerNumber, float bulletSpeed)
     {
         ownerTank = tank;
@@ -52,23 +47,32 @@ public class Bullet : MonoBehaviour
 
         // Set initial velocity
         rb.velocity = transform.up * speed;
+    }
 
-        if (enableDebugLogs)
-            Debug.Log($"Bullet initialized with speed {speed}");
+    // Spread shot bullet initialization (NOT player controllable)
+    public void InitializeSpreadBullet(int playerNumber, float bulletSpeed)
+    {
+        ownerPlayer = playerNumber;
+        speed = bulletSpeed;
+        ownerTank = null; // No tank reference = no player control
+
+        if (rb == null)
+            rb = GetComponent<Rigidbody2D>();
+
+        // Set initial velocity - spread bullets just fly straight
+        rb.velocity = transform.up * speed;
     }
 
     public void SetExplosive(float radius)
     {
         isExplosive = true;
         explosionRadius = radius;
-
-        if (enableDebugLogs)
-            Debug.Log($"Bullet set to explosive with radius {radius}");
     }
 
     public void HandleInput(Vector2 input)
     {
-        if (rb == null) return;
+        // Only allow control if this bullet has an owner tank (normal bullets only)
+        if (rb == null || ownerTank == null) return;
 
         // Apply force to control bullet direction
         rb.AddForce(input * controlForce * Time.deltaTime);
@@ -80,22 +84,18 @@ public class Bullet : MonoBehaviour
         }
     }
 
-    // Use both OnTriggerEnter2D and OnCollisionEnter2D for better detection
     void OnTriggerEnter2D(Collider2D other)
     {
-        HandleCollision(other.gameObject, "Trigger");
+        HandleCollision(other.gameObject);
     }
 
     void OnCollisionEnter2D(Collision2D collision)
     {
-        HandleCollision(collision.gameObject, "Collision");
+        HandleCollision(collision.gameObject);
     }
 
-    void HandleCollision(GameObject hitObject, string collisionType)
+    void HandleCollision(GameObject hitObject)
     {
-        if (enableDebugLogs)
-            Debug.Log($"Bullet {collisionType}: {hitObject.name} with tag: {hitObject.tag}");
-
         // Check if hit a tank
         if (CheckTankHit(hitObject))
             return;
@@ -104,7 +104,7 @@ public class Bullet : MonoBehaviour
         if (CheckWallHit(hitObject))
             return;
 
-        // Check for other objects that should destroy the bullet
+        // Check for other destructible objects
         if (CheckOtherDestructibles(hitObject))
             return;
     }
@@ -114,9 +114,6 @@ public class Bullet : MonoBehaviour
         TankController tank = hitObject.GetComponent<TankController>();
         if (tank != null && tank.playerNumber != ownerPlayer)
         {
-            if (enableDebugLogs)
-                Debug.Log($"Bullet hit enemy tank {tank.playerNumber}");
-
             if (isExplosive)
             {
                 CreateExplosion();
@@ -134,18 +131,11 @@ public class Bullet : MonoBehaviour
 
     void CreateExplosion()
     {
-        if (enableDebugLogs)
-            Debug.Log($"Creating explosion at {transform.position} with radius {explosionRadius}");
-
         // Spawn explosion visual effect
         if (explosionEffectPrefab != null)
         {
             GameObject explosion = Instantiate(explosionEffectPrefab, transform.position, Quaternion.identity);
-
-            // Scale the explosion effect based on radius
             explosion.transform.localScale = Vector3.one * (explosionRadius / 2f);
-
-            // Destroy explosion effect after a few seconds
             Destroy(explosion, 3f);
         }
 
@@ -160,30 +150,20 @@ public class Bullet : MonoBehaviour
 
         foreach (Collider2D hitCollider in hitColliders)
         {
-            // Check if it's a tank
             TankController tank = hitCollider.GetComponent<TankController>();
             if (tank != null && tank.playerNumber != ownerPlayer)
             {
-                if (enableDebugLogs)
-                    Debug.Log($"Explosion hit tank {tank.playerNumber}");
-
                 tank.TakeDamage();
             }
-
-            // You could also damage destructible objects here
-            // DestructibleObject destructible = hitCollider.GetComponent<DestructibleObject>();
-            // if (destructible != null) destructible.TakeDamage();
         }
     }
 
     bool CheckWallHit(GameObject hitObject)
     {
-        // Check by tag
-        if (hitObject.CompareTag("Wall"))
+        if (hitObject.CompareTag("Wall") ||
+            hitObject.name.ToLower().Contains("wall") ||
+            hitObject.layer == LayerMask.NameToLayer("Walls"))
         {
-            if (enableDebugLogs)
-                Debug.Log("Bullet hit wall (by tag)");
-
             if (isExplosive)
             {
                 CreateExplosion();
@@ -192,61 +172,24 @@ public class Bullet : MonoBehaviour
             DestroyBullet();
             return true;
         }
-
-        // Check by name (backup method)
-        if (hitObject.name.ToLower().Contains("wall"))
-        {
-            if (enableDebugLogs)
-                Debug.Log("Bullet hit wall (by name)");
-
-            if (isExplosive)
-            {
-                CreateExplosion();
-            }
-
-            DestroyBullet();
-            return true;
-        }
-
-        // Check by layer (if you're using layers)
-        if (hitObject.layer == LayerMask.NameToLayer("Walls"))
-        {
-            if (enableDebugLogs)
-                Debug.Log("Bullet hit wall (by layer)");
-
-            if (isExplosive)
-            {
-                CreateExplosion();
-            }
-
-            DestroyBullet();
-            return true;
-        }
-
         return false;
     }
 
     bool CheckOtherDestructibles(GameObject hitObject)
     {
-        // Add other objects that should destroy bullets
         if (hitObject.CompareTag("Obstacle") || hitObject.CompareTag("Barrier"))
         {
-            if (enableDebugLogs)
-                Debug.Log($"Bullet hit destructible: {hitObject.tag}");
-
             DestroyBullet();
             return true;
         }
+        
 
         return false;
     }
 
     void DestroyBullet()
     {
-        if (enableDebugLogs)
-            Debug.Log("Destroying bullet");
-
-        // Notify owner tank that bullet is destroyed
+        // Notify owner tank that bullet is destroyed (only for controllable bullets)
         if (ownerTank != null)
         {
             ownerTank.OnBulletDestroyed();

@@ -20,25 +20,10 @@ public class TankController : MonoBehaviour
     public KeyCode rightKey = KeyCode.D;
     public KeyCode fireKey = KeyCode.Space;
 
-    [Header("Animation")]
-    public Animator tankAnimator;
-    public string idleAnimationName = "Tank_Idle";
-    public string movingAnimationName = "Tank_Moving";
-    public string spinningAnimationName = "Tank_Spinning";
-
     private Rigidbody2D rb;
     private float nextFireTime = 0f;
-    private int health = 1;
     private Bullet activeBullet;
     private bool canMove = true;
-    private bool isSpinning = false;
-    private float spinDuration = 2f;
-    private float spinSpeed = 720f;
-    private float spinTimer = 0f;
-
-    // Animation state tracking
-    private bool isMoving = false;
-    private string currentAnimationState = "";
 
     // Explosive bullet tracking
     private bool nextBulletIsExplosive = false;
@@ -48,9 +33,14 @@ public class TankController : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
 
-        // Get animator if not assigned
-        if (tankAnimator == null)
-            tankAnimator = GetComponent<Animator>();
+        // Ensure proper rigidbody settings to prevent spinning
+        if (rb != null)
+        {
+            rb.gravityScale = 0f; // No gravity for top-down
+            rb.drag = 2f; // Add some drag to prevent sliding
+            rb.angularDrag = 5f; // Add angular drag to prevent spinning
+            rb.freezeRotation = false; // Allow controlled rotation
+        }
 
         // Set up fire point if not assigned
         if (firePoint == null)
@@ -60,36 +50,23 @@ public class TankController : MonoBehaviour
             fp.transform.localPosition = new Vector3(1f, 0f, 0f);
             firePoint = fp.transform;
         }
-
-        // Start with idle animation
-        ChangeAnimationState(idleAnimationName);
     }
 
     void Update()
     {
-        if (isSpinning)
-        {
-            HandleSpinning();
-        }
-        else
-        {
-            HandleInput();
-        }
+        HandleInput();
     }
 
-    void HandleSpinning()
+    void FixedUpdate()
     {
-        // The spinning animation handles the visual rotation
-        // We just need to manage the timer and movement
-        rb.velocity = Vector2.zero;
-
-        // Update spin timer
-        spinTimer -= Time.deltaTime;
-        if (spinTimer <= 0f)
+        // Stop any unwanted spinning
+        if (canMove && rb != null)
         {
-            isSpinning = false;
-            canMove = true;
-            ChangeAnimationState(idleAnimationName);
+            // Clamp angular velocity to prevent uncontrolled spinning
+            if (Mathf.Abs(rb.angularVelocity) > rotationSpeed * 2f)
+            {
+                rb.angularVelocity = Mathf.Sign(rb.angularVelocity) * rotationSpeed * 2f;
+            }
         }
     }
 
@@ -107,27 +84,21 @@ public class TankController : MonoBehaviour
 
             activeBullet.HandleInput(bulletInput);
 
-            // Freeze tank movement
+            // Freeze tank movement and rotation
             rb.velocity = Vector2.zero;
-
-            // Set to idle since tank isn't moving
-            if (isMoving)
-            {
-                isMoving = false;
-                ChangeAnimationState(idleAnimationName);
-            }
+            rb.angularVelocity = 0f;
             return;
         }
 
-        // Normal tank movement (only if no active bullet and not spinning)
-        if (!canMove || isSpinning) return;
+        // Normal tank movement (only if no active bullet)
+        if (!canMove) return;
 
         // Movement
         float moveInput = 0f;
         if (Input.GetKey(forwardKey))
             moveInput = 1f;
         else if (Input.GetKey(backwardKey))
-            moveInput = -0.5f; // Slower reverse like original Combat
+            moveInput = -0.5f; // Slower reverse
 
         // Rotation
         float rotationInput = 0f;
@@ -136,79 +107,120 @@ public class TankController : MonoBehaviour
         else if (Input.GetKey(rightKey))
             rotationInput = -1f;
 
-        // Check if tank is moving for animation
-        bool shouldBeMoving = (moveInput != 0f || rotationInput != 0f);
-
-        // Update animation state
-        if (shouldBeMoving && !isMoving)
-        {
-            isMoving = true;
-            ChangeAnimationState(movingAnimationName);
-        }
-        else if (!shouldBeMoving && isMoving)
-        {
-            isMoving = false;
-            ChangeAnimationState(idleAnimationName);
-        }
-
         // Apply movement
         Vector2 movement = transform.up * moveInput * moveSpeed;
         rb.velocity = movement;
 
-        // Apply rotation
-        float rotation = rotationInput * rotationSpeed * Time.deltaTime;
-        transform.Rotate(0, 0, rotation);
+        // Apply rotation using transform instead of physics to prevent spinning
+        if (rotationInput != 0f)
+        {
+            float rotation = rotationInput * rotationSpeed * Time.deltaTime;
+            transform.Rotate(0, 0, rotation);
+            // Stop any physics-based angular velocity
+            rb.angularVelocity = 0f;
+        }
+        else
+        {
+            // Stop rotation when no input
+            rb.angularVelocity = 0f;
+        }
 
-        // Shooting (only if no active bullet and not spinning)
-        if (Input.GetKeyDown(fireKey) && Time.time >= nextFireTime && activeBullet == null && !isSpinning)
+        // Shooting (only if no active bullet)
+        if (Input.GetKeyDown(fireKey) && Time.time >= nextFireTime && activeBullet == null)
         {
             Fire();
             nextFireTime = Time.time + fireRate;
         }
     }
 
-    void ChangeAnimationState(string newState)
-    {
-        // Stop the same animation from interrupting itself
-        if (currentAnimationState == newState) return;
-
-        // Play the animation
-        if (tankAnimator != null)
-        {
-            tankAnimator.Play(newState);
-        }
-
-        currentAnimationState = newState;
-    }
-
     void Fire()
     {
         if (bulletPrefab != null && firePoint != null && activeBullet == null)
         {
-            GameObject bullet = Instantiate(bulletPrefab, firePoint.position, firePoint.rotation);
+            PowerUpEffect powerUp = GetComponent<PowerUpEffect>();
+
+            // Check if we should fire spread shot
+            if (powerUp != null && powerUp.ShouldFireSpreadShot())
+            {
+                FireSpreadShot(powerUp.GetSpreadShotBullets());
+                powerUp.OnSpreadShotFired();
+            }
+            else
+            {
+                FireSingleBullet();
+            }
+        }
+    }
+
+    void FireSingleBullet()
+    {
+        GameObject bullet = Instantiate(bulletPrefab, firePoint.position, firePoint.rotation);
+        Bullet bulletScript = bullet.GetComponent<Bullet>();
+        if (bulletScript != null)
+        {
+            bulletScript.Initialize(this, playerNumber, bulletSpeed);
+
+            // Set explosive properties if needed
+            if (nextBulletIsExplosive)
+            {
+                bulletScript.SetExplosive(explosionRadius);
+                nextBulletIsExplosive = false;
+
+                // Notify power-up effect that explosive bullet was fired
+                PowerUpEffect effect = GetComponent<PowerUpEffect>();
+                if (effect != null)
+                {
+                    effect.OnExplosiveBulletFired();
+                }
+            }
+
+            activeBullet = bulletScript;
+            canMove = false;
+        }
+    }
+
+    void FireSpreadShot(int bulletCount)
+    {
+        // Calculate angle spread - wider spread for more bullets
+        float totalSpread = Mathf.Clamp(bulletCount * 15f, 30f, 90f);
+        float angleStep = totalSpread / (bulletCount - 1);
+        float startAngle = -totalSpread / 2f;
+
+        for (int i = 0; i < bulletCount; i++)
+        {
+            float currentAngle = startAngle + (angleStep * i);
+
+            // Calculate rotation for this bullet
+            Quaternion bulletRotation = firePoint.rotation * Quaternion.Euler(0, 0, currentAngle);
+
+            GameObject bullet = Instantiate(bulletPrefab, firePoint.position, bulletRotation);
             Bullet bulletScript = bullet.GetComponent<Bullet>();
+
             if (bulletScript != null)
             {
-                bulletScript.Initialize(this, playerNumber, bulletSpeed);
+                // Initialize as NON-CONTROLLABLE bullets
+                bulletScript.InitializeSpreadBullet(playerNumber, bulletSpeed);
 
-                // Set explosive properties if needed
+                // Apply explosive to all bullets if active
                 if (nextBulletIsExplosive)
                 {
                     bulletScript.SetExplosive(explosionRadius);
-                    nextBulletIsExplosive = false;
-
-                    // Notify power-up effect that explosive bullet was fired
-                    PowerUpEffect effect = GetComponent<PowerUpEffect>();
-                    if (effect != null)
-                    {
-                        effect.OnExplosiveBulletFired();
-                    }
                 }
-
-                activeBullet = bulletScript;
-                canMove = false;
             }
         }
+
+        // Reset explosive after firing spread shot
+        if (nextBulletIsExplosive)
+        {
+            nextBulletIsExplosive = false;
+            PowerUpEffect effect = GetComponent<PowerUpEffect>();
+            if (effect != null)
+            {
+                effect.OnExplosiveBulletFired();
+            }
+        }
+
+        // Tank can move immediately after spread shot
     }
 
     // Called by power-up system to set next bullet as explosive
@@ -231,26 +243,19 @@ public class TankController : MonoBehaviour
         PowerUpEffect powerUpEffect = GetComponent<PowerUpEffect>();
         if (powerUpEffect != null && !powerUpEffect.ShouldTakeDamage())
         {
-            return; // Damage was absorbed by shield or extra life
+            return; // Damage was absorbed by shield
         }
 
-        // Start spinning animation
-        isSpinning = true;
-        canMove = false;
-        isMoving = false;
-        spinTimer = spinDuration;
-
-        // Change to spinning animation
-        ChangeAnimationState(spinningAnimationName);
-
-        // Stop any current movement
+        // Stop any current movement and rotation
         rb.velocity = Vector2.zero;
+        rb.angularVelocity = 0f;
 
         // Destroy any active bullet
         if (activeBullet != null)
         {
             Destroy(activeBullet.gameObject);
             activeBullet = null;
+            canMove = true;
         }
 
         // Inform game manager that this player was hit
@@ -259,15 +264,30 @@ public class TankController : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        // Handle wall bouncing if needed
+        // Handle wall bouncing with controlled physics
         if (other.CompareTag("Wall"))
         {
-            // Simple bounce - reverse velocity
+            // Simple bounce - reverse velocity but stop angular velocity
             rb.velocity = -rb.velocity * 0.5f;
+            rb.angularVelocity = 0f; // Stop spinning on wall hit
         }
 
         // Handle power-up collection
         PowerUp powerUp = other.GetComponent<PowerUp>();
+        if (powerUp != null)
+        {
+            powerUp.CollectPowerUp(this);
+        }
+    }
+
+    // Also handle collision-based power-up pickup as backup
+    void OnCollisionEnter2D(Collision2D collision)
+    {
+        // Stop spinning on any collision
+        rb.angularVelocity = 0f;
+
+        // Handle power-up collection via collision too
+        PowerUp powerUp = collision.gameObject.GetComponent<PowerUp>();
         if (powerUp != null)
         {
             powerUp.CollectPowerUp(this);
