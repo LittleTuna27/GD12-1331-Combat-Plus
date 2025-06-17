@@ -1,0 +1,244 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class PowerUpSpawner : MonoBehaviour
+{
+    [Header("Spawn Settings")]
+    public GameObject[] powerUpPrefabs; // Array of different power-up prefabs
+    public int maxPowerUps = 3; // Maximum power-ups on field at once
+    public float spawnInterval = 10f; // Time between spawn attempts
+    public float powerUpLifetime = 15f; // How long power-ups stay on field
+
+    [Header("Spawn Area")]
+    public Transform[] spawnPoints; // Predefined spawn points
+    public bool useRandomSpawning = true;
+    public Vector2 spawnAreaMin = new Vector2(-8f, -4f);
+    public Vector2 spawnAreaMax = new Vector2(8f, 4f);
+    public LayerMask obstacleLayer = 1; // What layers to avoid when spawning
+    public float spawnCheckRadius = 1f; // Radius to check for clear spawning
+
+    [Header("Spawn Chances")]
+    [Range(0f, 1f)] public float speedBoostChance = 0.3f;
+    [Range(0f, 1f)] public float rapidFireChance = 0.3f;
+    [Range(0f, 1f)] public float shieldChance = 0.2f;
+    [Range(0f, 1f)] public float bombChance = 0.2f;
+
+    private List<GameObject> activePowerUps = new List<GameObject>();
+    private float nextSpawnTime;
+
+    void Start()
+    {
+        nextSpawnTime = Time.time + spawnInterval;
+
+        // Validate spawn chances
+        ValidateSpawnChances();
+    }
+
+    void Update()
+    {
+        // Clean up destroyed power-ups from our list
+        CleanupDestroyedPowerUps();
+
+        // Check if we should spawn a new power-up
+        if (Time.time >= nextSpawnTime && activePowerUps.Count < maxPowerUps)
+        {
+            SpawnPowerUp();
+            nextSpawnTime = Time.time + spawnInterval;
+        }
+    }
+
+    void SpawnPowerUp()
+    {
+        Vector3 spawnPosition;
+
+        // Try to find a valid spawn position
+        if (FindValidSpawnPosition(out spawnPosition))
+        {
+            // Choose which power-up to spawn
+            GameObject powerUpPrefab = ChoosePowerUpPrefab();
+
+            if (powerUpPrefab != null)
+            {
+                GameObject newPowerUp = Instantiate(powerUpPrefab, spawnPosition, Quaternion.identity);
+                activePowerUps.Add(newPowerUp);
+
+                // Destroy after lifetime
+                StartCoroutine(DestroyPowerUpAfterTime(newPowerUp, powerUpLifetime));
+
+                Debug.Log($"Spawned {newPowerUp.name} at {spawnPosition}");
+            }
+        }
+        else
+        {
+            Debug.LogWarning("Could not find valid spawn position for power-up");
+        }
+    }
+
+    bool FindValidSpawnPosition(out Vector3 position)
+    {
+        position = Vector3.zero;
+        int maxAttempts = 20;
+
+        for (int i = 0; i < maxAttempts; i++)
+        {
+            Vector3 attemptPosition;
+
+            if (useRandomSpawning)
+            {
+                // Random position within spawn area
+                attemptPosition = new Vector3(
+                    Random.Range(spawnAreaMin.x, spawnAreaMax.x),
+                    Random.Range(spawnAreaMin.y, spawnAreaMax.y),
+                    0f
+                );
+            }
+            else if (spawnPoints != null && spawnPoints.Length > 0)
+            {
+                // Use predefined spawn points
+                Transform randomPoint = spawnPoints[Random.Range(0, spawnPoints.Length)];
+                attemptPosition = randomPoint.position;
+            }
+            else
+            {
+                // Fallback to random if no spawn points defined
+                attemptPosition = new Vector3(
+                    Random.Range(spawnAreaMin.x, spawnAreaMax.x),
+                    Random.Range(spawnAreaMin.y, spawnAreaMax.y),
+                    0f
+                );
+            }
+
+            // Check if position is clear
+            if (IsPositionClear(attemptPosition))
+            {
+                position = attemptPosition;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    bool IsPositionClear(Vector3 position)
+    {
+        // Check for obstacles using Physics2D
+        Collider2D hit = Physics2D.OverlapCircle(position, spawnCheckRadius, obstacleLayer);
+        return hit == null;
+    }
+
+    GameObject ChoosePowerUpPrefab()
+    {
+        if (powerUpPrefabs == null || powerUpPrefabs.Length == 0)
+            return null;
+
+        // If we only have one prefab, return it
+        if (powerUpPrefabs.Length == 1)
+            return powerUpPrefabs[0];
+
+        // Choose based on chances
+        float randomValue = Random.Range(0f, 1f);
+        float cumulativeChance = 0f;
+
+        // Speed Boost
+        cumulativeChance += speedBoostChance;
+        if (randomValue <= cumulativeChance && HasPowerUpOfType(PowerUpType.SpeedBoost))
+            return GetPowerUpPrefabOfType(PowerUpType.SpeedBoost);
+
+        // Rapid Fire
+        cumulativeChance += rapidFireChance;
+        if (randomValue <= cumulativeChance && HasPowerUpOfType(PowerUpType.RapidFire))
+            return GetPowerUpPrefabOfType(PowerUpType.RapidFire);
+
+        // Shield
+        cumulativeChance += shieldChance;
+        if (randomValue <= cumulativeChance && HasPowerUpOfType(PowerUpType.ShieldBoost))
+            return GetPowerUpPrefabOfType(PowerUpType.ShieldBoost);
+
+        // Explosive Bomb
+        if (HasPowerUpOfType(PowerUpType.ExplosiveBomb))
+            return GetPowerUpPrefabOfType(PowerUpType.ExplosiveBomb);
+
+        // Fallback to random prefab
+        return powerUpPrefabs[Random.Range(0, powerUpPrefabs.Length)];
+    }
+
+    bool HasPowerUpOfType(PowerUpType type)
+    {
+        foreach (GameObject prefab in powerUpPrefabs)
+        {
+            PowerUp powerUp = prefab.GetComponent<PowerUp>();
+            if (powerUp != null && powerUp.powerUpType == type)
+                return true;
+        }
+        return false;
+    }
+
+    GameObject GetPowerUpPrefabOfType(PowerUpType type)
+    {
+        foreach (GameObject prefab in powerUpPrefabs)
+        {
+            PowerUp powerUp = prefab.GetComponent<PowerUp>();
+            if (powerUp != null && powerUp.powerUpType == type)
+                return prefab;
+        }
+        return null;
+    }
+
+    void ValidateSpawnChances()
+    {
+        float total = speedBoostChance + rapidFireChance + shieldChance + bombChance;
+        if (total > 1f)
+        {
+            Debug.LogWarning($"Power-up spawn chances total {total:F2}, which is greater than 1.0. Consider adjusting values.");
+        }
+    }
+
+    void CleanupDestroyedPowerUps()
+    {
+        for (int i = activePowerUps.Count - 1; i >= 0; i--)
+        {
+            if (activePowerUps[i] == null)
+            {
+                activePowerUps.RemoveAt(i);
+            }
+        }
+    }
+
+    IEnumerator DestroyPowerUpAfterTime(GameObject powerUp, float time)
+    {
+        yield return new WaitForSeconds(time);
+
+        if (powerUp != null)
+        {
+            // Remove from active list
+            activePowerUps.Remove(powerUp);
+
+            // Add fade out effect here if desired
+            Destroy(powerUp);
+        }
+    }
+
+    // Visualize spawn area in scene view
+    void OnDrawGizmosSelected()
+    {
+        // Draw spawn area
+        Gizmos.color = Color.yellow;
+        Vector3 center = new Vector3((spawnAreaMin.x + spawnAreaMax.x) / 2f, (spawnAreaMin.y + spawnAreaMax.y) / 2f, 0f);
+        Vector3 size = new Vector3(spawnAreaMax.x - spawnAreaMin.x, spawnAreaMax.y - spawnAreaMin.y, 0f);
+        Gizmos.DrawWireCube(center, size);
+
+        // Draw spawn points
+        if (spawnPoints != null)
+        {
+            Gizmos.color = Color.green;
+            foreach (Transform point in spawnPoints)
+            {
+                if (point != null)
+                {
+                    Gizmos.DrawWireSphere(point.position, spawnCheckRadius);
+                }
+            }
+        }
+    }
+}
