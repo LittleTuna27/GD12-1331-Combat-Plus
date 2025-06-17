@@ -1,4 +1,5 @@
 using UnityEngine;
+using System;
 
 public class Bullet : MonoBehaviour
 {
@@ -19,17 +20,12 @@ public class Bullet : MonoBehaviour
     private bool isExplosive = false;
     private float explosionRadius = 3f;
 
+    // Event for when this bullet hits a tank
+    public event Action<TankController> OnTankHit;
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-
-        // Ensure rigidbody settings are correct
-        if (rb != null)
-        {
-            rb.gravityScale = 0f;
-            rb.drag = 0f;
-            rb.angularDrag = 0f;
-        }
 
         // Destroy bullet after lifetime
         Destroy(gameObject, lifetime);
@@ -114,6 +110,9 @@ public class Bullet : MonoBehaviour
         TankController tank = hitObject.GetComponent<TankController>();
         if (tank != null && tank.playerNumber != ownerPlayer)
         {
+            // Fire the event BEFORE dealing damage/effects
+            OnTankHit?.Invoke(tank);
+
             if (isExplosive)
             {
                 CreateExplosion();
@@ -153,6 +152,8 @@ public class Bullet : MonoBehaviour
             TankController tank = hitCollider.GetComponent<TankController>();
             if (tank != null && tank.playerNumber != ownerPlayer)
             {
+                // Fire event for each tank hit by explosion
+                OnTankHit?.Invoke(tank);
                 tank.TakeDamage();
             }
         }
@@ -177,13 +178,23 @@ public class Bullet : MonoBehaviour
 
     bool CheckOtherDestructibles(GameObject hitObject)
     {
-        if (hitObject.CompareTag("Obstacle") || hitObject.CompareTag("Barrier"))
+        if (hitObject.CompareTag("Wall"))
         {
             DestroyBullet();
             return true;
         }
-        
+        if (hitObject.CompareTag("Player"))
+        {
+            DestroyBullet();
 
+            if (ownerTank != null)
+            {
+                ownerTank.AddScore(1);
+                Debug.Log("Hit Player");
+            }
+
+            return true;
+        }
         return false;
     }
 

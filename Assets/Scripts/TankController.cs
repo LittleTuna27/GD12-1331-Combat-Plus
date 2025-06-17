@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEngine.UI;
+using System.Collections;
 
 public class TankController : MonoBehaviour
 {
@@ -20,15 +22,25 @@ public class TankController : MonoBehaviour
     public KeyCode rightKey = KeyCode.D;
     public KeyCode fireKey = KeyCode.Space;
 
+    [Header("Hit Animation")]
+    public float spinDuration = 1f;
+    public int spinRotations = 3;
+
     private Rigidbody2D rb;
     private float nextFireTime = 0f;
     private Bullet activeBullet;
     private bool canMove = true;
+    private bool isSpinning = false;
 
     // Explosive bullet tracking
     private bool nextBulletIsExplosive = false;
     private float explosionRadius = 3f;
 
+    [Header("Score")]
+    public int score = 0;
+    public Text scoreText;
+
+    [SerializeField] private UIManager UIManager;
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -50,17 +62,22 @@ public class TankController : MonoBehaviour
             fp.transform.localPosition = new Vector3(1f, 0f, 0f);
             firePoint = fp.transform;
         }
+
+        UpdateScoreUI();
     }
 
     void Update()
     {
-        HandleInput();
+        if (!isSpinning)
+        {
+            HandleInput();
+        }
     }
 
     void FixedUpdate()
     {
-        // Stop any unwanted spinning
-        if (canMove && rb != null)
+        // Stop any unwanted spinning (only when not intentionally spinning)
+        if (canMove && rb != null && !isSpinning)
         {
             // Clamp angular velocity to prevent uncontrolled spinning
             if (Mathf.Abs(rb.angularVelocity) > rotationSpeed * 2f)
@@ -160,6 +177,9 @@ public class TankController : MonoBehaviour
         {
             bulletScript.Initialize(this, playerNumber, bulletSpeed);
 
+            // Subscribe to the hit event
+            bulletScript.OnTankHit += OnEnemyTankHit;
+
             // Set explosive properties if needed
             if (nextBulletIsExplosive)
             {
@@ -201,6 +221,9 @@ public class TankController : MonoBehaviour
                 // Initialize as NON-CONTROLLABLE bullets
                 bulletScript.InitializeSpreadBullet(playerNumber, bulletSpeed);
 
+                // Subscribe to hit events for spread bullets too
+                bulletScript.OnTankHit += OnEnemyTankHit;
+
                 // Apply explosive to all bullets if active
                 if (nextBulletIsExplosive)
                 {
@@ -221,6 +244,55 @@ public class TankController : MonoBehaviour
         }
 
         // Tank can move immediately after spread shot
+    }
+
+    private void OnEnemyTankHit(TankController hitTank)
+    {
+        AddScore(1); // The one who fires the bullet gets the point
+        hitTank.StartSpinAnimation();
+    }
+
+    // Method to start the spin animation when this tank gets hit
+    public void StartSpinAnimation()
+    {
+        if (!isSpinning)
+        {
+            StartCoroutine(SpinAnimation());
+        }
+    }
+
+    private IEnumerator SpinAnimation()
+    {
+        isSpinning = true;
+        canMove = false;
+
+        // Stop current movement
+        rb.velocity = Vector2.zero;
+        rb.angularVelocity = 0f;
+
+        // Calculate spin speed to complete the desired rotations in the given time
+        float degreesPerSecond = (360f * spinRotations) / spinDuration;
+
+        float elapsedTime = 0f;
+        float startRotation = transform.eulerAngles.z;
+
+        while (elapsedTime < spinDuration)
+        {
+            elapsedTime += Time.deltaTime;
+
+            // Calculate current rotation
+            float currentRotation = startRotation + (degreesPerSecond * elapsedTime);
+            transform.rotation = Quaternion.Euler(0, 0, currentRotation);
+
+            yield return null;
+        }
+
+        // Ensure we end at the correct rotation (complete rotations)
+        float finalRotation = startRotation + (360f * spinRotations);
+        transform.rotation = Quaternion.Euler(0, 0, finalRotation);
+
+        isSpinning = false;
+        canMove = true;
     }
 
     // Called by power-up system to set next bullet as explosive
@@ -258,8 +330,8 @@ public class TankController : MonoBehaviour
             canMove = true;
         }
 
-        // Inform game manager that this player was hit
-        GameManager.Instance?.PlayerHit(playerNumber);
+        // The spin animation and point awarding is now handled by the event system
+        // This method now just handles the damage/reset logic
     }
 
     void OnTriggerEnter2D(Collider2D other)
@@ -283,14 +355,30 @@ public class TankController : MonoBehaviour
     // Also handle collision-based power-up pickup as backup
     void OnCollisionEnter2D(Collision2D collision)
     {
-        // Stop spinning on any collision
-        rb.angularVelocity = 0f;
+        // Stop spinning on any collision (only if not intentionally spinning)
+        if (!isSpinning)
+        {
+            rb.angularVelocity = 0f;
+        }
 
         // Handle power-up collection via collision too
         PowerUp powerUp = collision.gameObject.GetComponent<PowerUp>();
         if (powerUp != null)
         {
             powerUp.CollectPowerUp(this);
+        }
+    }
+    public void AddScore(int amount)
+    {
+        score += amount;
+        UpdateScoreUI();
+    }
+
+    private void UpdateScoreUI()
+    {
+        if (scoreText != null)
+        {
+            scoreText.text = $"Player {playerNumber}: {score}";
         }
     }
 }

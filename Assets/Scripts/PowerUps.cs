@@ -99,8 +99,6 @@ public class PowerUpEffect : MonoBehaviour
 
     void Awake()
     {
-        // Initialize tankController in Awake instead of Start
-        // This ensures it's available immediately when the component is added
         tankController = GetComponent<TankController>();
     }
 
