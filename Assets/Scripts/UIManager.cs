@@ -27,26 +27,6 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    void Start()
-    {
-        SetGameOverUIActive(false);
-
-        // Subscribe only to non-score events
-        if (GameManager.Instance != null)
-        {
-            GameManager.Instance.OnGameOver += ShowGameOver;
-            GameManager.Instance.OnGameRestart += HideGameOver;
-        }
-    }
-
-    void OnDestroy()
-    {
-        if (GameManager.Instance != null)
-        {
-            GameManager.Instance.OnGameOver -= ShowGameOver;
-            GameManager.Instance.OnGameRestart -= HideGameOver;
-        }
-    }
 
     public void ShowGameOver(string winnerText)
     {

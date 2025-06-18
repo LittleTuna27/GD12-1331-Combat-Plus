@@ -7,13 +7,20 @@ public class SimpleSceneChanger : MonoBehaviour
 {
     public string sceneName;
 
+    // Use this when assigning from UI Button
     public void LoadScene()
     {
-        SceneManager.LoadScene(sceneName);
+        LoadSceneByName(sceneName);
     }
 
-    public void LoadScene(string sceneToLoad)
+    // Use this from code to pass in a specific scene
+    public void LoadSceneByName(string sceneToLoad)
     {
         SceneManager.LoadScene(sceneToLoad);
+    }
+
+    public void QuitGame()
+    {
+        Application.Quit();
     }
 }

@@ -93,7 +93,7 @@ public class PowerUpEffect : MonoBehaviour
 
     // Effect tracking
     private bool hasShield = false;
-    private bool hasExplosiveBomb = false;
+    private bool hasExplosiveRocket = false;
     private bool hasSpreadShot = false;
     private int spreadShotBullets = 3; // Number of bullets in spread
 
@@ -120,6 +120,9 @@ public class PowerUpEffect : MonoBehaviour
         if (tankController == null)
             tankController = GetComponent<TankController>();
 
+        // SET THE SPREAD SHOT ICON WHEN COLLECTED
+        tankController.SetSpreadShotIcon();
+
         Debug.Log($"Player {tankController?.playerNumber ?? 0} got Spread Shot! Next shot will fire {spreadShotBullets} bullets!");
     }
 
@@ -132,9 +135,12 @@ public class PowerUpEffect : MonoBehaviour
         if (!hasShield)
         {
             hasShield = true;
+
+            // SET THE SHIELD ICON WHEN COLLECTED
+            tankController.SetShieldIcon();
+
             Invoke(nameof(RemoveShield), duration);
 
-            // Visual indicator for shield (you can add a shield sprite here)
             Debug.Log($"Player {tankController?.playerNumber ?? 0} got Shield!");
         }
     }
@@ -145,11 +151,11 @@ public class PowerUpEffect : MonoBehaviour
         if (tankController == null)
             tankController = GetComponent<TankController>();
 
-        hasExplosiveBomb = true;
+        hasExplosiveRocket = true;
         Debug.Log($"Player {tankController?.playerNumber ?? 0} got Explosive Bomb! Next shot will explode!");
 
-        // Store explosion radius for when bullet hits
-        GetComponent<TankController>().SetExplosiveBullet(explosionRadius);
+        // This already sets the bomb icon correctly
+        tankController.SetExplosiveBullet(explosionRadius);
     }
 
     // Remove effect methods
@@ -160,6 +166,9 @@ public class PowerUpEffect : MonoBehaviour
         // Ensure tankController is available
         if (tankController == null)
             tankController = GetComponent<TankController>();
+
+        // CLEAR THE SHIELD ICON
+        tankController.ClearPowerupIcon();
 
         Debug.Log($"Player {tankController?.playerNumber ?? 0} Shield ended");
     }
@@ -180,7 +189,10 @@ public class PowerUpEffect : MonoBehaviour
     // Called when explosive bullet is fired
     public void OnExplosiveBulletFired()
     {
-        hasExplosiveBomb = false;
+        hasExplosiveRocket = false;
+        // CLEAR THE BOMB ICON
+        if (tankController != null)
+            tankController.ClearPowerupIcon();
     }
 
     // Check if next shot should be spread shot
@@ -200,5 +212,9 @@ public class PowerUpEffect : MonoBehaviour
     {
         hasSpreadShot = false;
         spreadShotBullets = 3; // Reset to default
+
+        // CLEAR THE SPREAD SHOT ICON
+        if (tankController != null)
+            tankController.ClearPowerupIcon();
     }
 }

@@ -75,7 +75,7 @@ public class TankController : MonoBehaviour
         }
 
         UpdateScoreUI();
-
+        ClearPowerupIcon();
         audioSource = GetComponent<AudioSource>();
     }
 
@@ -330,19 +330,6 @@ public class TankController : MonoBehaviour
         canMove = true;
     }
 
-    // Called by power-up system to set next bullet as explosive
-    public void SetExplosiveBullet(float radius)
-    {
-        nextBulletIsExplosive = true;
-        explosionRadius = radius;
-
-        if (powerupIcon != null && bombIcon != null)
-        {
-            powerupIcon.sprite = bombIcon;
-            powerupIcon.enabled = true;
-        }
-    }
-
     // Called by bullet when it's destroyed
     public void OnBulletDestroyed()
     {
@@ -420,6 +407,43 @@ public class TankController : MonoBehaviour
         if (scoreText != null)
         {
             scoreText.text = $"Player {playerNumber}: {score}";
+        }
+    }
+
+    public void SetExplosiveBullet(float radius)
+    {
+        nextBulletIsExplosive = true;
+        explosionRadius = radius;
+
+        if (powerupIcon != null && bombIcon != null)
+        {
+            powerupIcon.sprite = bombIcon;
+            powerupIcon.enabled = true;
+        }
+    }
+
+    public void SetShieldIcon()
+    {
+        if (powerupIcon != null && shieldIcon != null)
+        {
+            powerupIcon.sprite = shieldIcon;
+            powerupIcon.enabled = true;
+        }
+    }
+    public void SetSpreadShotIcon()
+    {
+        if (powerupIcon != null && spreadShotIcon != null)
+        {
+            powerupIcon.sprite = spreadShotIcon;
+            powerupIcon.enabled = true;
+        }
+    }
+
+    public void ClearPowerupIcon()
+    {
+        if (powerupIcon != null)
+        {
+            powerupIcon.enabled = false;
         }
     }
 }
