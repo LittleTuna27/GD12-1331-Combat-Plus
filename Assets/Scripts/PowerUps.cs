@@ -1,8 +1,10 @@
 using UnityEngine;
+using UnityEngine.UI;
+using System.Collections;
 
 public enum PowerUpType
 {
-    SpreadShot,     // Replaces SpeedBoost and RapidFire
+    SpreadShot,
     ShieldBoost,
     ExplosiveBomb
 }
@@ -11,7 +13,7 @@ public class PowerUp : MonoBehaviour
 {
     [Header("Power-Up Settings")]
     public PowerUpType powerUpType;
-    public float effectDuration = 5f;
+    public float effectDuration = 15f;
     public float effectStrength = 2f;
     public AudioClip collectSound;
 
@@ -24,8 +26,6 @@ public class PowerUp : MonoBehaviour
     void Start()
     {
         audioSource = GetComponent<AudioSource>();
-
-        // If no audio source exists, create one
         if (audioSource == null && collectSound != null)
         {
             audioSource = gameObject.AddComponent<AudioSource>();
@@ -36,184 +36,199 @@ public class PowerUp : MonoBehaviour
 
     void Update()
     {
-        // Rotate only (bobbing removed)
         transform.Rotate(0, 0, rotateSpeed * Time.deltaTime);
     }
 
     public void CollectPowerUp(TankController tank)
     {
-        // Play sound effect
         if (audioSource != null && collectSound != null)
         {
             audioSource.Play();
         }
 
-        // Spawn visual effect
         if (collectEffect != null)
         {
             Instantiate(collectEffect, transform.position, Quaternion.identity);
         }
 
-        // Apply power-up effect
         ApplyPowerUp(tank);
 
-        // Destroy the power-up (after a short delay if sound is playing)
         float destroyDelay = (audioSource != null && collectSound != null) ? collectSound.length : 0f;
         Destroy(gameObject, destroyDelay);
     }
 
     void ApplyPowerUp(TankController tank)
     {
-        PowerUpEffect effect = tank.GetComponent<PowerUpEffect>();
-        if (effect == null)
+        PowerUpManager powerUpManager = tank.GetComponent<PowerUpManager>();
+        if (powerUpManager == null)
         {
-            effect = tank.gameObject.AddComponent<PowerUpEffect>();
+            powerUpManager = tank.gameObject.AddComponent<PowerUpManager>();
         }
 
         switch (powerUpType)
         {
             case PowerUpType.SpreadShot:
-                // effectStrength determines number of bullets (3 = 3 bullets, 5 = 5 bullets, etc.)
-                effect.ApplySpreadShot((int)effectStrength);
+                powerUpManager.ActivateSpreadShot((int)effectStrength);
                 break;
             case PowerUpType.ShieldBoost:
-                effect.ApplyShield(effectDuration);
+                powerUpManager.ActivateShield(effectDuration);
                 break;
             case PowerUpType.ExplosiveBomb:
-                effect.ApplyExplosiveBomb(effectStrength);
+                powerUpManager.ActivateExplosiveBomb(effectStrength);
                 break;
         }
     }
 }
 
-// Component to handle power-up effects on tanks
-public class PowerUpEffect : MonoBehaviour
+// Consolidated power-up management
+public class PowerUpManager : MonoBehaviour
 {
-    private TankController tankController;
+    [Header("UI References")]
+    public Image powerupIcon;
+    public Sprite bombIcon;
+    public Sprite shieldIcon;
+    public Sprite spreadShotIcon;
 
-    // Effect tracking
+    [Header("Shield")]
+    public GameObject bubbleShieldPrefab;
+
+    private TankController tankController;
+    private GameObject activeShield;
+
+    // Power-up states
     private bool hasShield = false;
-    private bool hasExplosiveRocket = false;
+    private bool hasExplosiveBomb = false;
     private bool hasSpreadShot = false;
-    private int spreadShotBullets = 3; // Number of bullets in spread
+    private int spreadShotBullets = 3;
+    private float explosionRadius = 3f;
 
     void Awake()
     {
         tankController = GetComponent<TankController>();
-    }
 
-    void Start()
-    {
-        // Keep this as backup in case Awake didn't run
-        if (tankController == null)
+        // Try to find UI references from TankController if not set
+        if (powerupIcon == null && tankController != null)
         {
-            tankController = GetComponent<TankController>();
+            powerupIcon = tankController.powerupIcon;
+            bombIcon = tankController.bombIcon;
+            shieldIcon = tankController.shieldIcon;
+            spreadShotIcon = tankController.spreadShotIcon;
+            bubbleShieldPrefab = tankController.bubbleShieldPrefab;
         }
     }
 
-    public void ApplySpreadShot(int bulletCount)
+    // Public methods for TankController to check power-up states
+    public bool ShouldFireSpreadShot() => hasSpreadShot;
+    public int GetSpreadShotBullets() => spreadShotBullets;
+    public bool ShouldSetExplosiveBullet() => hasExplosiveBomb;
+    public float GetExplosionRadius() => explosionRadius;
+    public bool HasShield() => hasShield;
+
+    // Power-up activation methods
+    public void ActivateSpreadShot(int bulletCount)
     {
         hasSpreadShot = true;
-        spreadShotBullets = Mathf.Clamp(bulletCount, 3, 7); // Limit between 3-7 bullets
-
-        // Ensure tankController is available
-        if (tankController == null)
-            tankController = GetComponent<TankController>();
-
-        // SET THE SPREAD SHOT ICON WHEN COLLECTED
-        tankController.SetSpreadShotIcon();
-
-        Debug.Log($"Player {tankController?.playerNumber ?? 0} got Spread Shot! Next shot will fire {spreadShotBullets} bullets!");
+        spreadShotBullets = Mathf.Clamp(bulletCount, 3, 7);
+        UpdatePowerUpIcon(spreadShotIcon);
+        Debug.Log($"Player {tankController.playerNumber} got Spread Shot! Next shot will fire {spreadShotBullets} bullets!");
     }
 
-    public void ApplyShield(float duration)
+    public void ActivateShield(float duration)
     {
-        // Ensure tankController is available
-        if (tankController == null)
-            tankController = GetComponent<TankController>();
-
         if (!hasShield)
         {
             hasShield = true;
-
-            tankController.SetShieldIcon();
-
-            Invoke(nameof(RemoveShield), duration);
-
-            Debug.Log($"Player {tankController?.playerNumber ?? 0} got Shield!");
+            CreateBubbleShield();
+            UpdatePowerUpIcon(shieldIcon);
+            StartCoroutine(ShieldTimer(duration));
+            Debug.Log($"Player {tankController.playerNumber} got Shield!");
         }
     }
 
-    public void ApplyExplosiveBomb(float explosionRadius)
+    public void ActivateExplosiveBomb(float radius)
     {
-        // Ensure tankController is available
-        if (tankController == null)
-            tankController = GetComponent<TankController>();
-
-        hasExplosiveRocket = true;
-        Debug.Log($"Player {tankController?.playerNumber ?? 0} got Explosive Bomb! Next shot will explode!");
-
-        // This already sets the bomb icon correctly
-        tankController.SetExplosiveBullet(explosionRadius);
+        hasExplosiveBomb = true;
+        explosionRadius = radius;
+        UpdatePowerUpIcon(bombIcon);
+        Debug.Log($"Player {tankController.playerNumber} got Explosive Bomb! Next shot will explode!");
     }
 
-    // Remove effect methods
-    void RemoveShield()
+    // Called by TankController when effects are used
+    public void OnSpreadShotFired()
     {
-        hasShield = false;
-
-        // Ensure tankController is available
-        if (tankController == null)
-            tankController = GetComponent<TankController>();
-
-        // CLEAR THE SHIELD ICON
-        tankController.ClearPowerupIcon();
-
-        Debug.Log($"Player {tankController?.playerNumber ?? 0} Shield ended");
+        hasSpreadShot = false;
+        spreadShotBullets = 3;
+        ClearPowerUpIcon();
     }
 
-    // Method to check if tank should take damage (called from TakeDamage)
+    public void OnExplosiveBulletFired()
+    {
+        hasExplosiveBomb = false;
+        ClearPowerUpIcon();
+    }
+
+    // Damage checking - returns true if damage should be taken
     public bool ShouldTakeDamage()
     {
         if (hasShield)
         {
-            RemoveShield();
-            CancelInvoke(nameof(RemoveShield));
+            DeactivateShield();
             return false; // Shield absorbed the hit
         }
-
         return true; // Take normal damage
     }
 
-    // Called when explosive bullet is fired
-    public void OnExplosiveBulletFired()
+    // Private helper methods
+    private void CreateBubbleShield()
     {
-        hasExplosiveRocket = false;
-        // CLEAR THE BOMB ICON
-        if (tankController != null)
-            tankController.ClearPowerupIcon();
+        if (bubbleShieldPrefab != null && activeShield == null)
+        {
+            activeShield = Instantiate(bubbleShieldPrefab, transform.position, Quaternion.identity);
+            BubbleShield shieldScript = activeShield.GetComponent<BubbleShield>();
+            if (shieldScript != null)
+            {
+                shieldScript.AttachToOwner(gameObject);
+            }
+        }
     }
 
-    // Check if next shot should be spread shot
-    public bool ShouldFireSpreadShot()
+    private IEnumerator ShieldTimer(float duration)
     {
-        return hasSpreadShot;
+        yield return new WaitForSeconds(duration);
+        if (hasShield) // Check if shield wasn't already removed by damage
+        {
+            DeactivateShield();
+        }
     }
 
-    // Get number of bullets for spread shot
-    public int GetSpreadShotBullets()
+    private void DeactivateShield()
     {
-        return spreadShotBullets;
+        hasShield = false;
+
+        if (activeShield != null)
+        {
+            Destroy(activeShield);
+            activeShield = null;
+        }
+
+        ClearPowerUpIcon();
+        Debug.Log($"Player {tankController.playerNumber} Shield ended");
     }
 
-    // Called when spread shot is fired
-    public void OnSpreadShotFired()
+    private void UpdatePowerUpIcon(Sprite icon)
     {
-        hasSpreadShot = false;
-        spreadShotBullets = 3; // Reset to default
+        if (powerupIcon != null && icon != null)
+        {
+            powerupIcon.sprite = icon;
+            powerupIcon.enabled = true;
+        }
+    }
 
-        // CLEAR THE SPREAD SHOT ICON
-        if (tankController != null)
-            tankController.ClearPowerupIcon();
+    private void ClearPowerUpIcon()
+    {
+        if (powerupIcon != null)
+        {
+            powerupIcon.enabled = false;
+        }
     }
 }
