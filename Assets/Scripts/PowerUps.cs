@@ -100,7 +100,7 @@ public class PowerUpManager : MonoBehaviour
     private bool hasExplosiveBomb = false;
     private bool hasSpreadShot = false;
     private int spreadShotBullets = 3;
-    private float explosionRadius = 3f;
+    private float explosionRadius = 2f;
 
     void Awake()
     {

@@ -25,6 +25,7 @@ public class TankController : MonoBehaviour
     [Header("Hit Animation")]
     public float spinDuration = 1f;
     public int spinRotations = 3;
+    public float inputBlockDuration = 2f; // Time to block inputs after getting hit
 
     [Header("Score")]
     public int score = 0;
@@ -46,12 +47,16 @@ public class TankController : MonoBehaviour
     // Core components
     private Rigidbody2D rb;
     private PowerUpManager powerUpManager;
-    
+
     // Movement and shooting state
     private float nextFireTime = 0f;
     private Bullet activeBullet;
     private bool canMove = true;
     private bool isSpinning = false;
+
+    // NEW: Input blocking system
+    private bool inputsBlocked = false;
+    private bool canShoot = true;
 
     void Start()
     {
@@ -88,7 +93,10 @@ public class TankController : MonoBehaviour
 
     void Update()
     {
-        if (!isSpinning)
+        // Check global input blocking first, then local conditions
+        bool globallyBlocked = GlobalInputManager.Instance != null && GlobalInputManager.Instance.AreInputsBlocked();
+
+        if (!isSpinning && !inputsBlocked && !globallyBlocked)
         {
             HandleInput();
         }
@@ -96,7 +104,9 @@ public class TankController : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (canMove && rb != null && !isSpinning)
+        bool globallyBlocked = GlobalInputManager.Instance != null && GlobalInputManager.Instance.AreInputsBlocked();
+
+        if (canMove && rb != null && !isSpinning && !inputsBlocked && !globallyBlocked)
         {
             if (Mathf.Abs(rb.angularVelocity) > rotationSpeed * 2f)
             {
@@ -107,7 +117,7 @@ public class TankController : MonoBehaviour
 
     void HandleInput()
     {
-        // Control active bullet if it exists
+        // Control active bullet if it exists (only if inputs not blocked)
         if (activeBullet != null)
         {
             Vector2 bulletInput = Vector2.zero;
@@ -156,8 +166,8 @@ public class TankController : MonoBehaviour
         // Handle movement audio
         HandleMovementAudio();
 
-        // Shooting
-        if (Input.GetKeyDown(fireKey) && Time.time >= nextFireTime && activeBullet == null)
+        // Shooting (only if can shoot and not blocked)
+        if (Input.GetKeyDown(fireKey) && Time.time >= nextFireTime && activeBullet == null && canShoot)
         {
             Fire();
             nextFireTime = Time.time + fireRate;
@@ -166,7 +176,7 @@ public class TankController : MonoBehaviour
 
     void HandleMovementAudio()
     {
-        bool isMoving = Input.GetKey(forwardKey) || Input.GetKey(backwardKey) || 
+        bool isMoving = Input.GetKey(forwardKey) || Input.GetKey(backwardKey) ||
                        Input.GetKey(leftKey) || Input.GetKey(rightKey);
 
         if (isMoving && !isMoveAudioPlaying && moveClip != null && !audioSource.isPlaying)
@@ -208,7 +218,7 @@ public class TankController : MonoBehaviour
     {
         GameObject bullet = Instantiate(bulletPrefab, firePoint.position, firePoint.rotation);
         Bullet bulletScript = bullet.GetComponent<Bullet>();
-        
+
         if (bulletScript != null)
         {
             bulletScript.Initialize(this, playerNumber, bulletSpeed);
@@ -258,7 +268,7 @@ public class TankController : MonoBehaviour
         {
             powerUpManager.OnExplosiveBulletFired();
         }
-        
+
         powerUpManager.OnSpreadShotFired();
     }
 
@@ -317,6 +327,12 @@ public class TankController : MonoBehaviour
             return; // Damage was absorbed by shield
         }
 
+        // NEW: Block ALL players' inputs when ANY player gets hit
+        if (GlobalInputManager.Instance != null)
+        {
+            GlobalInputManager.Instance.BlockAllPlayerInputs();
+        }
+
         // Stop movement and destroy active bullet
         rb.velocity = Vector2.zero;
         rb.angularVelocity = 0f;
@@ -327,7 +343,64 @@ public class TankController : MonoBehaviour
             activeBullet = null;
             canMove = true;
         }
+
+        Debug.Log($"Player {playerNumber} was hit! ALL players' inputs blocked!");
     }
+
+    // NEW: Method to force stop movement (called by GlobalInputManager)
+    public void ForceStopMovement()
+    {
+        if (rb != null)
+        {
+            rb.velocity = Vector2.zero;
+            rb.angularVelocity = 0f;
+        }
+
+        // Stop movement audio
+        if (isMoveAudioPlaying)
+        {
+            audioSource.Stop();
+            isMoveAudioPlaying = false;
+        }
+    }
+
+    // NEW: Input blocking methods
+    public void BlockInputs()
+    {
+        StartCoroutine(BlockInputsCoroutine());
+    }
+
+    private IEnumerator BlockInputsCoroutine()
+    {
+        inputsBlocked = true;
+        canMove = false;
+        canShoot = false;
+
+        // Stop any movement immediately
+        rb.velocity = Vector2.zero;
+        rb.angularVelocity = 0f;
+
+        // Stop movement audio
+        if (isMoveAudioPlaying)
+        {
+            audioSource.Stop();
+            isMoveAudioPlaying = false;
+        }
+
+        yield return new WaitForSeconds(inputBlockDuration);
+
+        // Re-enable inputs
+        inputsBlocked = false;
+        canMove = true;
+        canShoot = true;
+
+        Debug.Log($"Player {playerNumber} inputs restored!");
+    }
+
+    // NEW: Public methods to check input state
+    public bool AreInputsBlocked() => inputsBlocked;
+    public bool CanPlayerShoot() => canShoot && !inputsBlocked;
+    public bool CanPlayerMove() => canMove && !inputsBlocked;
 
     public bool HasShield()
     {
