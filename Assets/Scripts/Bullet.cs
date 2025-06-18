@@ -83,6 +83,31 @@ public class Bullet : MonoBehaviour
     void OnTriggerEnter2D(Collider2D other)
     {
         HandleCollision(other.gameObject);
+
+        if (other.CompareTag("Shield"))
+        {
+            // Hit the shield, destroy bullet and maybe damage or absorb
+            Destroy(gameObject);
+
+            // Optional: destroy shield after hit
+            Destroy(other.gameObject);
+            return;
+        }
+
+        if (other.CompareTag("Player"))
+        {
+            // Only do this if they don't have a shield
+            TankController player = other.GetComponent<TankController>();
+            if (player != null && player.HasShield())
+            {
+                // Shield will absorb, do nothing here
+                return;
+            }
+
+            // Otherwise apply damage to the tank
+            // player.TakeDamage(), etc.
+            Destroy(gameObject);
+        }
     }
 
     void OnCollisionEnter2D(Collision2D collision)

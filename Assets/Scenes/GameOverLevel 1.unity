@@ -1073,7 +1073,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1210602842}
         m_TargetAssemblyTypeName: SimpleSceneChanger, Assembly-CSharp
-        m_MethodName: LoadScene
+        m_MethodName: LoadSceneByName
         m_Mode: 5
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

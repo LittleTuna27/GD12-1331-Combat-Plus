@@ -136,7 +136,6 @@ public class PowerUpEffect : MonoBehaviour
         {
             hasShield = true;
 
-            // SET THE SHIELD ICON WHEN COLLECTED
             tankController.SetShieldIcon();
 
             Invoke(nameof(RemoveShield), duration);

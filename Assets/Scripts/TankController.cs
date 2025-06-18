@@ -52,6 +52,9 @@ public class TankController : MonoBehaviour
     public Sprite shieldIcon;
     public Sprite spreadShotIcon;
 
+    public GameObject bubbleShieldPrefab;
+    private GameObject activeShield;
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -283,6 +286,7 @@ public class TankController : MonoBehaviour
 
     private void OnEnemyTankHit(TankController hitTank)
     {
+
         AddScore(1); // The one who fires the bullet gets the point
         hitTank.StartSpinAnimation();
     }
@@ -378,6 +382,7 @@ public class TankController : MonoBehaviour
         {
             powerUp.CollectPowerUp(this);
         }
+
     }
 
     // Also handle collision-based power-up pickup as backup
@@ -396,6 +401,7 @@ public class TankController : MonoBehaviour
             powerUp.CollectPowerUp(this);
         }
     }
+  
     public void AddScore(int amount)
     {
         score += amount;
@@ -445,5 +451,10 @@ public class TankController : MonoBehaviour
         {
             powerupIcon.enabled = false;
         }
+    }
+
+    public bool HasShield()
+    {
+        return activeShield != null;
     }
 }
