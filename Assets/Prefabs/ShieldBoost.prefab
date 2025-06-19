@@ -99,7 +99,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   powerUpType: 1
-  effectDuration: 5
+  effectDuration: 60
   effectStrength: 2
   collectSound: {fileID: 8300000, guid: bfcea9663f8347047b3f3d8955e171e4, type: 3}
   collectEffect: {fileID: 0}

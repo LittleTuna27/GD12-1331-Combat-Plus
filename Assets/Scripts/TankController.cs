@@ -327,7 +327,7 @@ public class TankController : MonoBehaviour
             return; // Damage was absorbed by shield
         }
 
-        // NEW: Block ALL players' inputs when ANY player gets hit
+        // Block ALL players' inputs when ANY player gets hit
         if (GlobalInputManager.Instance != null)
         {
             GlobalInputManager.Instance.BlockAllPlayerInputs();
@@ -347,7 +347,7 @@ public class TankController : MonoBehaviour
         Debug.Log($"Player {playerNumber} was hit! ALL players' inputs blocked!");
     }
 
-    // NEW: Method to force stop movement (called by GlobalInputManager)
+    // Method to force stop movement (called by GlobalInputManager)
     public void ForceStopMovement()
     {
         if (rb != null)
@@ -364,7 +364,7 @@ public class TankController : MonoBehaviour
         }
     }
 
-    // NEW: Input blocking methods
+    // Input blocking methods
     public void BlockInputs()
     {
         StartCoroutine(BlockInputsCoroutine());
@@ -396,12 +396,6 @@ public class TankController : MonoBehaviour
 
         Debug.Log($"Player {playerNumber} inputs restored!");
     }
-
-    // NEW: Public methods to check input state
-    public bool AreInputsBlocked() => inputsBlocked;
-    public bool CanPlayerShoot() => canShoot && !inputsBlocked;
-    public bool CanPlayerMove() => canMove && !inputsBlocked;
-
     public bool HasShield()
     {
         return powerUpManager.HasShield();
@@ -420,6 +414,7 @@ public class TankController : MonoBehaviour
         {
             powerUp.CollectPowerUp(this);
         }
+
     }
 
     void OnCollisionEnter2D(Collision2D collision)

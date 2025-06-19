@@ -10,7 +10,7 @@ public class GameManager : MonoBehaviour
 
     void Update()
     {
-        if (controller1.score == 10 || controller2.score == 10)
+        if (controller1.score >= 10 || controller2.score >= 10)
         {
             EndGame();
         }

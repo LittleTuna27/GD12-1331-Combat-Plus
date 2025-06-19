@@ -665,6 +665,41 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cdbfafdc36429084283d733e77e5f87c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!58 &423010720
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 423010711}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  serializedVersion: 2
+  m_Radius: 0.5
 --- !u!1 &454512178
 GameObject:
   m_ObjectHideFlags: 0
@@ -694,7 +729,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: df71179ecc95fba44a20aaee879fbff3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  globalInputBlockDuration: 2
+  globalInputBlockDuration: 1
 --- !u!4 &454512180
 Transform:
   m_ObjectHideFlags: 0
@@ -1399,6 +1434,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 21300000, guid: dc6b93b32ae68ab41a00de0917185634, type: 3}
     - target: {fileID: 5231518837796061950, guid: 830d84b8d0c0ec5458dd5245526c844d, type: 3}
+      propertyPath: fireRate
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 5231518837796061950, guid: 830d84b8d0c0ec5458dd5245526c844d, type: 3}
       propertyPath: moveClip
       value: 
       objectReference: {fileID: 8300000, guid: 8197b46d6128f8a46892833636fb90c9, type: 3}
@@ -1427,6 +1466,14 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 572633484}
     - target: {fileID: 5231518837796061950, guid: 830d84b8d0c0ec5458dd5245526c844d, type: 3}
+      propertyPath: spinDuration
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5231518837796061950, guid: 830d84b8d0c0ec5458dd5245526c844d, type: 3}
+      propertyPath: spinRotations
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5231518837796061950, guid: 830d84b8d0c0ec5458dd5245526c844d, type: 3}
       propertyPath: spreadShotIcon
       value: 
       objectReference: {fileID: 21300000, guid: 8d4c07c9ae7561040970e9708ca279f5, type: 3}
@@ -1434,13 +1481,21 @@ PrefabInstance:
       propertyPath: bubbleShieldPrefab
       value: 
       objectReference: {fileID: 5099332050235032462, guid: e00ddc6302369e84c96a25d6283f9bae, type: 3}
-    m_RemovedComponents: []
+    - target: {fileID: 5231518837796061950, guid: 830d84b8d0c0ec5458dd5245526c844d, type: 3}
+      propertyPath: inputBlockDuration
+      value: 1
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 3398700925445134253, guid: 830d84b8d0c0ec5458dd5245526c844d, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 4736835134734508107, guid: 830d84b8d0c0ec5458dd5245526c844d, type: 3}
       insertIndex: -1
       addedObject: {fileID: 423010712}
+    - targetCorrespondingSourceObject: {fileID: 4736835134734508107, guid: 830d84b8d0c0ec5458dd5245526c844d, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 423010720}
   m_SourcePrefab: {fileID: 100100000, guid: 830d84b8d0c0ec5458dd5245526c844d, type: 3}
 --- !u!1 &1202646666
 GameObject:
@@ -1586,6 +1641,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 21300000, guid: dc6b93b32ae68ab41a00de0917185634, type: 3}
     - target: {fileID: 5231518837796061950, guid: f5c14fe4aaf4ae7438d864a62b29cda7, type: 3}
+      propertyPath: fireRate
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 5231518837796061950, guid: f5c14fe4aaf4ae7438d864a62b29cda7, type: 3}
       propertyPath: moveClip
       value: 
       objectReference: {fileID: 8300000, guid: 8197b46d6128f8a46892833636fb90c9, type: 3}
@@ -1618,6 +1677,14 @@ PrefabInstance:
       value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 5231518837796061950, guid: f5c14fe4aaf4ae7438d864a62b29cda7, type: 3}
+      propertyPath: spinDuration
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5231518837796061950, guid: f5c14fe4aaf4ae7438d864a62b29cda7, type: 3}
+      propertyPath: spinRotations
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5231518837796061950, guid: f5c14fe4aaf4ae7438d864a62b29cda7, type: 3}
       propertyPath: spreadShotIcon
       value: 
       objectReference: {fileID: 21300000, guid: 8d4c07c9ae7561040970e9708ca279f5, type: 3}
@@ -1625,13 +1692,21 @@ PrefabInstance:
       propertyPath: bubbleShieldPrefab
       value: 
       objectReference: {fileID: 5099332050235032462, guid: e00ddc6302369e84c96a25d6283f9bae, type: 3}
-    m_RemovedComponents: []
+    - target: {fileID: 5231518837796061950, guid: f5c14fe4aaf4ae7438d864a62b29cda7, type: 3}
+      propertyPath: inputBlockDuration
+      value: 1
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 3398700925445134253, guid: f5c14fe4aaf4ae7438d864a62b29cda7, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 4736835134734508107, guid: f5c14fe4aaf4ae7438d864a62b29cda7, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2133227434}
+    - targetCorrespondingSourceObject: {fileID: 4736835134734508107, guid: f5c14fe4aaf4ae7438d864a62b29cda7, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2133227442}
   m_SourcePrefab: {fileID: 100100000, guid: f5c14fe4aaf4ae7438d864a62b29cda7, type: 3}
 --- !u!1001 &1255876923
 PrefabInstance:
@@ -2048,9 +2123,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   powerUpPrefabs:
-  - {fileID: 4270333888252670946, guid: 5836b3232b7395b42827d9af3165eb94, type: 3}
   - {fileID: 4270333888252670946, guid: 218fddd978ae78748ad1b9e40367a7fc, type: 3}
-  - {fileID: 4270333888252670946, guid: b5198c165942baf44aeabfb843280e83, type: 3}
   maxPowerUps: 1
   spawnInterval: 10
   powerUpLifetime: 15
@@ -2542,6 +2615,41 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cdbfafdc36429084283d733e77e5f87c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!58 &2133227442
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2133227433}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  serializedVersion: 2
+  m_Radius: 0.5
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

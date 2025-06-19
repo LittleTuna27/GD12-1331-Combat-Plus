@@ -23,6 +23,8 @@ public class Bullet : MonoBehaviour
     // Event for when this bullet hits a tank
     public event Action<TankController> OnTankHit;
 
+    private bool hasHit = false;
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -82,73 +84,71 @@ public class Bullet : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        HandleCollision(other.gameObject);
+        if (hasHit) return;
 
+        // BLOCKED BY SHIELD?
         if (other.CompareTag("Shield"))
         {
-            // Hit the shield, destroy bullet and maybe damage or absorb
-            Destroy(gameObject);
+            hasHit = true;
 
-            // Optional: destroy shield after hit
+            Debug.Log("Bullet blocked by shield!");
+
+            // Optional: destroy shield on hit
             Destroy(other.gameObject);
+
+            Destroy(gameObject);
             return;
         }
 
-        if (other.CompareTag("Player"))
+        // THEN check for tanks
+        TankController tank = other.GetComponent<TankController>();
+        if (tank != null && tank.playerNumber != ownerPlayer)
         {
-            // Only do this if they don't have a shield
-            TankController player = other.GetComponent<TankController>();
-            if (player != null && player.HasShield())
-            {
-                // Shield will absorb, do nothing here
-                return;
-            }
-
-            // Otherwise apply damage to the tank
-            // player.TakeDamage(), etc.
+            hasHit = true;
+            OnTankHit?.Invoke(tank);
             Destroy(gameObject);
         }
     }
 
-    void OnCollisionEnter2D(Collision2D collision)
-    {
-        HandleCollision(collision.gameObject);
-    }
 
-    void HandleCollision(GameObject hitObject)
-    {
-        // Check if hit a tank
-        if (CheckTankHit(hitObject))
-            return;
 
-        // Check if hit a wall
-        if (CheckWallHit(hitObject))
-            return;
-
-        // Check for other destructible objects
-        if (CheckOtherDestructibles(hitObject))
-            return;
-    }
 
     bool CheckTankHit(GameObject hitObject)
     {
-        TankController tank = hitObject.GetComponent<TankController>();
-        if (tank != null && tank.playerNumber != ownerPlayer)
-        {
-            // Fire the event BEFORE dealing damage/effects
-            OnTankHit?.Invoke(tank);
+        Debug.Log($"CheckTankHit called for: {hitObject.name}");
 
-            if (isExplosive)
+        TankController tank = hitObject.GetComponent<TankController>();
+        if (tank != null)
+        {
+            Debug.Log($"Found TankController on {hitObject.name}, player number: {tank.playerNumber}, owner: {ownerPlayer}");
+
+            if (tank.playerNumber != ownerPlayer)
             {
-                CreateExplosion();
+                Debug.Log($"Valid hit! Tank {tank.playerNumber} hit by player {ownerPlayer}'s bullet");
+
+                // Fire the event BEFORE dealing damage/effects
+                OnTankHit?.Invoke(tank);
+
+                if (isExplosive)
+                {
+                    CreateExplosion();
+                }
+                else
+                {
+                    tank.TakeDamage();
+                }
+
+                DestroyBullet();
+                return true;
             }
             else
             {
-                tank.TakeDamage();
+                Debug.Log($"Same player hit - ignoring (tank: {tank.playerNumber}, owner: {ownerPlayer})");
             }
-
-            DestroyBullet();
-            return true;
+        }
+        else
+        {
+            Debug.Log($"No TankController found on {hitObject.name}");
         }
         return false;
     }
@@ -192,6 +192,17 @@ public class Bullet : MonoBehaviour
 
     bool CheckOtherDestructibles(GameObject hitObject)
     {
+        // Check for any remaining tank hits that might have been missed
+        TankController tank = hitObject.GetComponent<TankController>();
+        if (tank != null && tank.playerNumber != ownerPlayer)
+        {
+            Debug.Log("Caught tank hit in CheckOtherDestructibles!");
+            OnTankHit?.Invoke(tank);
+            tank.TakeDamage();
+            DestroyBullet();
+            return true;
+        }
+
         if (hitObject.CompareTag("Wall"))
         {
             DestroyBullet();
@@ -200,13 +211,6 @@ public class Bullet : MonoBehaviour
         if (hitObject.CompareTag("Player"))
         {
             DestroyBullet();
-
-            if (ownerTank != null)
-            {
-                ownerTank.AddScore(1);
-                Debug.Log("Hit Player");
-            }
-
             return true;
         }
         return false;

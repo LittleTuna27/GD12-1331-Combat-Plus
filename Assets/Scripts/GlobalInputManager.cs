@@ -32,7 +32,7 @@ public class GlobalInputManager : MonoBehaviour
     public void BlockAllPlayerInputs()
     {
         StartCoroutine(BlockInputsCoroutine());
-    }
+    } 
 
     private IEnumerator BlockInputsCoroutine()
     {
