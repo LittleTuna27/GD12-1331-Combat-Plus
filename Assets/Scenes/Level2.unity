@@ -182,6 +182,10 @@ PrefabInstance:
       propertyPath: m_Size.y
       value: 0.75
       objectReference: {fileID: 0}
+    - target: {fileID: 5141002145201417371, guid: 26eb39f83fc60fd45aad33d7be9ea25a, type: 3}
+      propertyPath: m_IsTrigger
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5626540527865432540, guid: 26eb39f83fc60fd45aad33d7be9ea25a, type: 3}
       propertyPath: m_Name
       value: WallTile (1)
@@ -255,6 +259,10 @@ PrefabInstance:
       propertyPath: m_Size.y
       value: 0.75
       objectReference: {fileID: 0}
+    - target: {fileID: 5141002145201417371, guid: 26eb39f83fc60fd45aad33d7be9ea25a, type: 3}
+      propertyPath: m_IsTrigger
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5626540527865432540, guid: 26eb39f83fc60fd45aad33d7be9ea25a, type: 3}
       propertyPath: m_Name
       value: WallTile
@@ -324,6 +332,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5141002145201417371, guid: 26eb39f83fc60fd45aad33d7be9ea25a, type: 3}
+      propertyPath: m_IsTrigger
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5626540527865432540, guid: 26eb39f83fc60fd45aad33d7be9ea25a, type: 3}
       propertyPath: m_Name
       value: WallTile (4)
@@ -387,6 +399,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3758830722702154881, guid: 26eb39f83fc60fd45aad33d7be9ea25a, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5141002145201417371, guid: 26eb39f83fc60fd45aad33d7be9ea25a, type: 3}
+      propertyPath: m_IsTrigger
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5626540527865432540, guid: 26eb39f83fc60fd45aad33d7be9ea25a, type: 3}
@@ -458,6 +474,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5141002145201417371, guid: 26eb39f83fc60fd45aad33d7be9ea25a, type: 3}
+      propertyPath: m_IsTrigger
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5626540527865432540, guid: 26eb39f83fc60fd45aad33d7be9ea25a, type: 3}
       propertyPath: m_Name
       value: BottomWall
@@ -469,10 +489,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 5626540527865432540, guid: 26eb39f83fc60fd45aad33d7be9ea25a, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 834276374}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 26eb39f83fc60fd45aad33d7be9ea25a, type: 3}
 --- !u!1 &418178401
 GameObject:
@@ -1014,56 +1031,6 @@ Canvas:
   m_SortingLayerID: 0
   m_SortingOrder: 0
   m_TargetDisplay: 0
---- !u!1 &616268963 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 5626540527865432540, guid: 26eb39f83fc60fd45aad33d7be9ea25a, type: 3}
-  m_PrefabInstance: {fileID: 1564867038}
-  m_PrefabAsset: {fileID: 0}
---- !u!61 &616268964
-BoxCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 616268963}
-  m_Enabled: 1
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1}
-    newSize: {x: 1, y: 1}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  serializedVersion: 2
-  m_Size: {x: 1, y: 1}
-  m_EdgeRadius: 0
 --- !u!1001 &774398686
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1116,6 +1083,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5141002145201417371, guid: 26eb39f83fc60fd45aad33d7be9ea25a, type: 3}
+      propertyPath: m_IsTrigger
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5626540527865432540, guid: 26eb39f83fc60fd45aad33d7be9ea25a, type: 3}
       propertyPath: m_Name
       value: WallTile (9)
@@ -1129,106 +1100,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 26eb39f83fc60fd45aad33d7be9ea25a, type: 3}
---- !u!1 &820458954 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 5626540527865432540, guid: 26eb39f83fc60fd45aad33d7be9ea25a, type: 3}
-  m_PrefabInstance: {fileID: 1447012391}
-  m_PrefabAsset: {fileID: 0}
---- !u!61 &820458955
-BoxCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 820458954}
-  m_Enabled: 1
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1}
-    newSize: {x: 1, y: 1}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  serializedVersion: 2
-  m_Size: {x: 1, y: 1.75}
-  m_EdgeRadius: 0
---- !u!1 &834276373 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 5626540527865432540, guid: 26eb39f83fc60fd45aad33d7be9ea25a, type: 3}
-  m_PrefabInstance: {fileID: 328039673}
-  m_PrefabAsset: {fileID: 0}
---- !u!61 &834276374
-BoxCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 834276373}
-  m_Enabled: 1
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1}
-    newSize: {x: 1, y: 1}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  serializedVersion: 2
-  m_Size: {x: 1, y: 1}
-  m_EdgeRadius: 0
 --- !u!1 &935630919
 GameObject:
   m_ObjectHideFlags: 0
@@ -1354,6 +1225,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3758830722702154881, guid: 26eb39f83fc60fd45aad33d7be9ea25a, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5141002145201417371, guid: 26eb39f83fc60fd45aad33d7be9ea25a, type: 3}
+      propertyPath: m_IsTrigger
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5626540527865432540, guid: 26eb39f83fc60fd45aad33d7be9ea25a, type: 3}
@@ -1760,6 +1635,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5141002145201417371, guid: 26eb39f83fc60fd45aad33d7be9ea25a, type: 3}
+      propertyPath: m_IsTrigger
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5626540527865432540, guid: 26eb39f83fc60fd45aad33d7be9ea25a, type: 3}
       propertyPath: m_Name
       value: WallTile (11)
@@ -1908,6 +1787,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5141002145201417371, guid: 26eb39f83fc60fd45aad33d7be9ea25a, type: 3}
+      propertyPath: m_Size.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5141002145201417371, guid: 26eb39f83fc60fd45aad33d7be9ea25a, type: 3}
+      propertyPath: m_IsTrigger
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5626540527865432540, guid: 26eb39f83fc60fd45aad33d7be9ea25a, type: 3}
       propertyPath: m_Name
       value: Top Wall
@@ -1919,61 +1806,8 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 5626540527865432540, guid: 26eb39f83fc60fd45aad33d7be9ea25a, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 820458955}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 26eb39f83fc60fd45aad33d7be9ea25a, type: 3}
---- !u!1 &1455555299 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 5626540527865432540, guid: 26eb39f83fc60fd45aad33d7be9ea25a, type: 3}
-  m_PrefabInstance: {fileID: 1921164197}
-  m_PrefabAsset: {fileID: 0}
---- !u!61 &1455555300
-BoxCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1455555299}
-  m_Enabled: 1
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1}
-    newSize: {x: 1, y: 1}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  serializedVersion: 2
-  m_Size: {x: 1, y: 1}
-  m_EdgeRadius: 0
 --- !u!1 &1526875071
 GameObject:
   m_ObjectHideFlags: 0
@@ -2077,6 +1911,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5141002145201417371, guid: 26eb39f83fc60fd45aad33d7be9ea25a, type: 3}
+      propertyPath: m_IsTrigger
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5626540527865432540, guid: 26eb39f83fc60fd45aad33d7be9ea25a, type: 3}
       propertyPath: m_Name
       value: Right Wall
@@ -2088,10 +1926,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 5626540527865432540, guid: 26eb39f83fc60fd45aad33d7be9ea25a, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 616268964}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 26eb39f83fc60fd45aad33d7be9ea25a, type: 3}
 --- !u!1 &1643854045
 GameObject:
@@ -2123,7 +1958,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   powerUpPrefabs:
+  - {fileID: 4270333888252670946, guid: 5836b3232b7395b42827d9af3165eb94, type: 3}
   - {fileID: 4270333888252670946, guid: 218fddd978ae78748ad1b9e40367a7fc, type: 3}
+  - {fileID: 4270333888252670946, guid: b5198c165942baf44aeabfb843280e83, type: 3}
   maxPowerUps: 1
   spawnInterval: 10
   powerUpLifetime: 15
@@ -2266,6 +2103,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5141002145201417371, guid: 26eb39f83fc60fd45aad33d7be9ea25a, type: 3}
+      propertyPath: m_IsTrigger
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5626540527865432540, guid: 26eb39f83fc60fd45aad33d7be9ea25a, type: 3}
       propertyPath: m_Name
       value: Left Wall
@@ -2281,10 +2122,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 5626540527865432540, guid: 26eb39f83fc60fd45aad33d7be9ea25a, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1455555300}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 26eb39f83fc60fd45aad33d7be9ea25a, type: 3}
 --- !u!1 &1926327167
 GameObject:
@@ -2490,6 +2328,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5141002145201417371, guid: 26eb39f83fc60fd45aad33d7be9ea25a, type: 3}
+      propertyPath: m_IsTrigger
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5626540527865432540, guid: 26eb39f83fc60fd45aad33d7be9ea25a, type: 3}
       propertyPath: m_Name
       value: WallTile (7)
@@ -2661,7 +2503,6 @@ SceneRoots:
   - {fileID: 328039673}
   - {fileID: 1921164197}
   - {fileID: 1564867038}
-  - {fileID: 1643854047}
   - {fileID: 25766827}
   - {fileID: 6283004}
   - {fileID: 121684718}
@@ -2670,6 +2511,7 @@ SceneRoots:
   - {fileID: 1255876923}
   - {fileID: 235325506}
   - {fileID: 1971138445}
+  - {fileID: 1643854047}
   - {fileID: 1962926342}
   - {fileID: 606942625}
   - {fileID: 1171253000}

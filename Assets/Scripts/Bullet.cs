@@ -86,21 +86,32 @@ public class Bullet : MonoBehaviour
     {
         if (hasHit) return;
 
-        // BLOCKED BY SHIELD?
+        // Shield check
         if (other.CompareTag("Shield"))
         {
             hasHit = true;
-
             Debug.Log("Bullet blocked by shield!");
-
-            // Optional: destroy shield on hit
             Destroy(other.gameObject);
-
             Destroy(gameObject);
             return;
         }
 
-        // THEN check for tanks
+        // Wall check (NEW)
+        if (other.CompareTag("Wall") ||
+            other.gameObject.name.ToLower().Contains("wall") ||
+            other.gameObject.layer == LayerMask.NameToLayer("Walls"))
+        {
+            hasHit = true;
+            Debug.Log("Bullet hit wall via trigger!");
+
+            if (isExplosive)
+                CreateExplosion();
+
+            DestroyBullet();
+            return;
+        }
+
+        // Tank check
         TankController tank = other.GetComponent<TankController>();
         if (tank != null && tank.playerNumber != ownerPlayer)
         {
@@ -113,45 +124,6 @@ public class Bullet : MonoBehaviour
 
 
 
-    bool CheckTankHit(GameObject hitObject)
-    {
-        Debug.Log($"CheckTankHit called for: {hitObject.name}");
-
-        TankController tank = hitObject.GetComponent<TankController>();
-        if (tank != null)
-        {
-            Debug.Log($"Found TankController on {hitObject.name}, player number: {tank.playerNumber}, owner: {ownerPlayer}");
-
-            if (tank.playerNumber != ownerPlayer)
-            {
-                Debug.Log($"Valid hit! Tank {tank.playerNumber} hit by player {ownerPlayer}'s bullet");
-
-                // Fire the event BEFORE dealing damage/effects
-                OnTankHit?.Invoke(tank);
-
-                if (isExplosive)
-                {
-                    CreateExplosion();
-                }
-                else
-                {
-                    tank.TakeDamage();
-                }
-
-                DestroyBullet();
-                return true;
-            }
-            else
-            {
-                Debug.Log($"Same player hit - ignoring (tank: {tank.playerNumber}, owner: {ownerPlayer})");
-            }
-        }
-        else
-        {
-            Debug.Log($"No TankController found on {hitObject.name}");
-        }
-        return false;
-    }
 
     void CreateExplosion()
     {
@@ -171,49 +143,6 @@ public class Bullet : MonoBehaviour
         {
             AudioSource.PlayClipAtPoint(explosionSound, transform.position);
         }
-    }
-
-    bool CheckWallHit(GameObject hitObject)
-    {
-        if (hitObject.CompareTag("Wall") ||
-            hitObject.name.ToLower().Contains("wall") ||
-            hitObject.layer == LayerMask.NameToLayer("Walls"))
-        {
-            if (isExplosive)
-            {
-                CreateExplosion();
-            }
-
-            DestroyBullet();
-            return true;
-        }
-        return false;
-    }
-
-    bool CheckOtherDestructibles(GameObject hitObject)
-    {
-        // Check for any remaining tank hits that might have been missed
-        TankController tank = hitObject.GetComponent<TankController>();
-        if (tank != null && tank.playerNumber != ownerPlayer)
-        {
-            Debug.Log("Caught tank hit in CheckOtherDestructibles!");
-            OnTankHit?.Invoke(tank);
-            tank.TakeDamage();
-            DestroyBullet();
-            return true;
-        }
-
-        if (hitObject.CompareTag("Wall"))
-        {
-            DestroyBullet();
-            return true;
-        }
-        if (hitObject.CompareTag("Player"))
-        {
-            DestroyBullet();
-            return true;
-        }
-        return false;
     }
 
     void DestroyBullet()
